@@ -20,7 +20,7 @@ Running: validation against the HvA measurements, full-day timing of the fused M
 
 1. Air temperature in the city. The model uses Schiphol air temperature, while the squares are warmer. Add a simple urban heat island correction and check it against the HvA and WUR data.
 2. Several tiles at once. Run and stitch neighbouring tiles so cool spots just outside a tile count, and remove the tile-edge bias in the 300 m check.
-3. Pick the demo district with a quick screen of all of Amsterdam: tree density from the register, the national PET map, and vulnerability (elderly residents, income, CBS). Candidates: Nieuw-West (Slotermeer, Geuzenveld), Bijlmer, Indische Buurt.
+3. Pick the demo neighbourhood inside Nieuw-West with a screen of shade on main routes, distance to cool spots, and vulnerability (elderly residents, income, CBS).
 4. Run the demo district on the reference hot day (1 July 2015) and a real heatwave (25 July 2019).
 
 ## Phase 2, useful (about 3 weeks)
@@ -37,6 +37,12 @@ Running: validation against the HvA measurements, full-day timing of the fused M
 ## Phase 4, Paris
 
 La Chapelle and Goutte d'Or (18th), four tiles, 24 June 2026 (40.5 C at Montsouris). New loaders for IGN LiDAR HD, the August 2024 infrared photo, the Paris tree register and Meteo-France. Check against the Plan Climat rule of a cool spot within 7 minutes' walk. See docs/paris_feasibility.md.
+
+## Demo district
+
+Nieuw-West. It is red on the Gemeente's heat risk map, got the most cool spots, and hosted the 2026 cool spot pilot (Osdorp). The phase 1 screen picks the neighbourhood inside it. Zuidoost is the second choice.
+
+The Gemeente's new Koele Groene Stratenkaart (maps.amsterdam.nl/groene_straten, March 2026) marks per street how much greening is still needed. Our tool adds what it does not have: modelled shade and felt temperature per street, and where trees would help most. We score its streets rather than draw a rival map.
 
 ## Phase 5, future heat
 
