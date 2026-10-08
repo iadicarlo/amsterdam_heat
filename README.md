@@ -32,7 +32,7 @@ Tiles are 500 m with a 100 m buffer, in RD New (EPSG:28992). Street wind uses th
 
 ## Model
 
-SOLWEIG-GPU through our fork with Apple Silicon support ([branch apple-mps](https://github.com/iadicarlo/SOLWEIG-GPU/tree/apple-mps)). A full day on an M4 MacBook Pro takes 2.2 min for a 700 x 700 tile at 1 m (CPU: 2.8 min). Shadows and sky view factors match UMEP's own SOLWEIG code; see [docs/validation_121500_485000_umep.md](docs/validation_121500_485000_umep.md).
+SOLWEIG-GPU through our fork with Apple Silicon support ([branch apple-mps](https://github.com/iadicarlo/SOLWEIG-GPU/tree/apple-mps)). Shadows and the sky view factor run as fused Metal kernels. A full day on an M4 MacBook Pro takes 1.2 min for a 700 x 700 tile at 1 m and 4.4 min at 0.5 m (CPU: 2.8 and 13.8 min). Shadows and sky view factors match UMEP's own SOLWEIG code; see [docs/validation_121500_485000_umep.md](docs/validation_121500_485000_umep.md).
 
 ## Data
 
