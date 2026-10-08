@@ -1,0 +1,43 @@
+[project]
+name = "amsterdam-heat"
+version = "0.1.0"
+description = "Street-level heat stress and shade for Amsterdam from open aerial imagery, LiDAR and GPU radiation modelling"
+readme = "README.md"
+authors = [{ name = "Isma A. Di Carlo", email = "iadicarlo@icloud.com" }]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "torch>=2.5",
+    "torchvision",
+    "numpy",
+    "scipy",
+    "pandas",
+    "xarray",
+    "netcdf4",
+    "rasterio",
+    "rioxarray",
+    "geopandas",
+    "shapely",
+    "pyproj",
+    "laspy[lazrs]",
+    "owslib",
+    "requests",
+    "tqdm",
+    "matplotlib",
+    "pvlib",
+]
+
+[project.optional-dependencies]
+ml = ["segment-geospatial", "deepforest", "timm", "segmentation-models-pytorch"]
+
+[dependency-groups]
+dev = ["jupyterlab", "ipykernel", "pytest", "ruff"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/amsterdam_heat"]
+
+[tool.ruff]
+line-length = 100
