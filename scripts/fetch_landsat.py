@@ -17,7 +17,7 @@ fill, 1 clear land, 2 clear water).
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -124,8 +124,8 @@ def main():
     transform, width, height = grid()
     inbox = box_mask(transform, width, height)
     OUT.mkdir(parents=True, exist_ok=True)
-    env = dict(GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR", GDAL_HTTP_MULTIPLEX="YES",
-               CPL_VSIL_CURL_ALLOWED_EXTENSIONS=".tif", VSI_CACHE="TRUE")
+    env = {"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR", "GDAL_HTTP_MULTIPLEX": "YES",
+               "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif", "VSI_CACHE": "TRUE"}
 
     rows = []
     with rasterio.Env(**env):
@@ -186,7 +186,7 @@ def main():
         "bands": ["LST (deg C), NaN where not clear",
                   "clear mask: 0 cloud, shadow or fill, 1 clear land, 2 clear water"],
         "scenes": table["scene"].tolist() if len(table) else [],
-        "fetched": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "fetched": datetime.now(UTC).strftime("%Y-%m-%d"),
     }, indent=2) + "\n")
     print(f"{len(table)} scenes kept, table in {TABLE.relative_to(ROOT)}")
     if len(table):
