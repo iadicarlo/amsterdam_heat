@@ -257,3 +257,83 @@ def amsterdam_buurten(bbox: tuple[float, float, float, float], out: Path) -> Pat
     out.write_text(json.dumps(data))
     _record(out, url, params, "Gebieden, Gemeente Amsterdam, data.amsterdam.nl")
     return out
+
+
+LIANDER_ARCGIS = "https://services1.arcgis.com/v6W5HAVrpgSg3vts/arcgis/rest/services"
+LIANDER_LAYERS = {
+    "ls": ("Liander_Open_Data_Elektra", 112),  # laagspanningskabel, main grid only
+    "ms": ("Liander_Open_Data_Elektra", 424),  # middenspanningskabel
+    "hs": ("Liander_Open_Data_Elektra", 632),  # hoogspanningskabel, underground
+    "gas": ("Liander_Open_Data_Gas", 0),  # gasleiding, no pressure or diameter
+}
+
+
+def liander_network(layer: str, bbox: tuple[float, float, float, float], out: Path,
+                    page: int = 2000) -> Path:
+    """Liander cables or gas pipes (``ls``, ``ms``, ``hs`` or ``gas``) crossing the box,
+    GeoJSON in EPSG:28992. House connections are not in the open set."""
+    service, lid = LIANDER_LAYERS[layer]
+    url = f"{LIANDER_ARCGIS}/{service}/FeatureServer/{lid}/query"
+    xmin, ymin, xmax, ymax = bbox
+    params = {"where": "1=1", "geometry": f"{xmin},{ymin},{xmax},{ymax}",
+              "geometryType": "esriGeometryEnvelope", "inSR": 28992,
+              "spatialRel": "esriSpatialRelIntersects", "outFields": "*", "outSR": 28992,
+              "orderByFields": "OBJECTID", "resultRecordCount": page, "f": "geojson"}
+    features, start = [], 0
+    while True:
+        batch = _get(url, {**params, "resultOffset": start}).json()["features"]
+        features += batch
+        if len(batch) < page:
+            break
+        start += page
+    out.write_text(json.dumps({"type": "FeatureCollection", "features": features}))
+    _record(out, url, {**params, "resultOffset": "paged"},
+            "Liander Open Data (liggingsgegevens), CC BY 4.0")
+    return out
+
+
+def amsterdam_underground(table: str, out: Path, dataset: str = "leidingeninfrastructuur",
+                          bbox: tuple[float, float, float, float] | None = None,
+                          page: int = 5000, near: str | None = "geometrie") -> Path:
+    """One open table of the city's cables and pipes dataset, for example
+    ``waternet_rioolleidingen`` (sewers) or ``amsterdam_ovl_ondergrondse_kabels``
+    (street lighting), as GeoJSON in EPSG:28992. The REST API only filters by distance
+    to a point (field ``near``, only on LineString tables; pass None to page the whole
+    city), so the circle around ``bbox`` is fetched and clipped to the box here.
+    The ``klic_*`` tables need a city login and are not open."""
+    url = f"https://api.data.amsterdam.nl/v1/{dataset}/{table}/"
+    params = {"_format": "geojson", "_pageSize": page}
+    if bbox and near:
+        xmin, ymin, xmax, ymax = bbox
+        radius = int(np.ceil(np.hypot(xmax - xmin, ymax - ymin) / 2)) + 1
+        params[f"{near}[within]"] = f"POINT({(xmin + xmax) / 2} {(ymin + ymax) / 2}),{radius}"
+    headers = {"Accept-Crs": "EPSG:28992", "Content-Crs": "EPSG:28992"}
+    features, next_url = [], None
+    while True:
+        r = requests.get(next_url or url, params=None if next_url else params, headers=headers,
+                         timeout=600)
+        r.raise_for_status()
+        data = r.json()
+        features += data["features"]
+        links = data.get("_links", [])
+        next_url = next((link["href"] for link in links if link.get("rel") == "next"), None)
+        if not next_url:
+            break
+    if bbox:
+        from shapely.geometry import box, shape
+
+        b = box(*bbox)
+        features = [f for f in features if f["geometry"] and shape(f["geometry"]).intersects(b)]
+    out.write_text(json.dumps({"type": "FeatureCollection", "features": features}))
+    _record(out, url, {**params, "bbox": bbox}, "Gemeente Amsterdam, data.amsterdam.nl, CC BY")
+    return out
+
+
+def amsterdam_heat_network(out: Path) -> Path:
+    """Vattenfall district heating and cooling pipes (NETTYPE), whole city, WGS84
+    GeoJSON from Maps Amsterdam open geodata. Snapshot of May 2025."""
+    url = "https://maps.amsterdam.nl/open_geodata/geojson_lnglat.php"
+    params = {"KAARTLAAG": "STADSWARMTEKOUDE", "THEMA": "stadswarmtekoude"}
+    out.write_text(_get(url, params).text)
+    _record(out, url, params, "Vattenfall Warmte via Gemeente Amsterdam open geodata")
+    return out

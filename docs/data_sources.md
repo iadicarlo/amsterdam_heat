@@ -29,3 +29,16 @@ On the De Pijp tile, AHN alone covers 90% of register trees, summer NDVI 98%, an
 | WUR MAQ Amsterdam, Distributed Network | 23 street stations, air temperature, humidity and wind every 20 minutes, black globe at 6 of them, summers 2025 and 2026 | CC BY-NC 4.0 | In use ([validation_wur.md](validation_wur.md)) |
 | PANGAEA Amsterdam network 2015 | Air temperature at 24 stations | CC BY 3.0 | In use (heat island) |
 | Landsat 8 and 9, ECOSTRESS | Surface temperature on hot days, 2015 to 2026 | public domain | In use |
+
+## Cables and pipes
+
+See [utilities.md](utilities.md). Used to screen tree spots, not to replace a KLIC check.
+
+| Data | Source | Licence | Notes |
+|---|---|---|---|
+| Electricity cables, LS, MS, HS | Liander Open Data Elektra (ArcGIS) | CC BY 4.0 | No house connections |
+| Gas pipes | Liander Open Data Gas (ArcGIS) | CC BY 4.0 | No pressure or diameter |
+| Sewers | Waternet via Gemeente Amsterdam `leidingeninfrastructuur` | CC BY | Weekly, with type and diameter |
+| Street lighting cables | Gemeente Amsterdam `leidingeninfrastructuur` | CC BY | |
+| Gas transmission | Gemeente Amsterdam `risicozones` | public | |
+| District heating and cold | Vattenfall via Maps Amsterdam open geodata | Maps Amsterdam terms | May 2025 |
