@@ -8,7 +8,8 @@ Walking areas inside the neighbourhoods are the target: a pixel shaded at 11:00,
 15:00 or 17:00 counts once, 15:00 twice, and pixels within 15 m of a pedestrian
 PLUS or HOOFD route twice again. Trees are added until the pavements have 30% shade
 and the route pavements 40% at 15:00, or --max trees. Candidates lie on public
-pavement or public green (BGT, bronhouder Gemeente Amsterdam). Writes
+pavement or public green (BGT, bronhouder Gemeente Amsterdam), clear of the cables
+and pipes in open data (amsterdam_heat.utilities). Writes
 data/processed/trees/<name>/ (trees.geojson, steps.csv) and figures/trees_<name>.png.
 """
 
@@ -100,6 +101,8 @@ def main() -> None:
     ap.add_argument("--district", default="nieuw-west")
     ap.add_argument("--date", default="2015-07-01")
     ap.add_argument("--max", type=int, default=400)
+    ap.add_argument("--no-utilities", action="store_true",
+                    help="ignore cables and pipes (open data, amsterdam_heat.utilities)")
     args = ap.parse_args()
 
     city = ROOT / "data" / "raw" / "city"
@@ -138,7 +141,12 @@ def main() -> None:
 
     plantable = (walk | public_green) & (lc != 2) & (lc != 7)
     plantable &= gl._raster([g.buffer(10) for g in area.geometry], grid).astype(bool)
-    cands = pl.candidates(plantable, lc == 2, trees > 2.0, rules)
+    blocked = np.zeros(grid.shape, bool)
+    if not args.no_utilities:
+        from amsterdam_heat import utilities
+
+        blocked |= utilities.utility_mask(grid.transform, grid.shape, utilities.load_layers(ROOT / "data" / "raw" / "utilities"))
+    cands = pl.candidates(plantable & ~blocked, lc == 2, trees > 2.0, rules)
     patches = {h: tuple(pl.footprint_patch(tree, alt, az, PATCH) for alt, az in pos)
                for h, pos in sun(args.date).items()}
     print(f"{names}: {len(cands)} candidate spots, {target.sum()} m2 of pavement, "
@@ -183,7 +191,8 @@ def main() -> None:
                "pavement_shade_15_before": before[0], "route_shade_15_before": before[1],
                "pavement_shade_15_after": steps["pavement_shade_15"].iloc[-1] if len(steps) else before[0],
                "route_shade_15_after": steps["route_shade_15"].iloc[-1] if len(steps) else before[1],
-               "tree": tree.__dict__, "rules": rules.__dict__, "window": list(win)}
+               "tree": tree.__dict__, "rules": rules.__dict__, "window": list(win),
+               "utilities": not args.no_utilities}
     summary["trees_xy"] = [[float(x), float(y)] for x, y in zip(xs, ys, strict=True)]
     old = json.loads((out / "summary.json").read_text()) if (out / "summary.json").exists() else {}
     if old.get("trees_xy") == summary["trees_xy"]:
