@@ -59,7 +59,8 @@ def main() -> None:
     buurten = buurten[buurten.representative_point().within(area)][["code", "geometry"]]
     buurten = buurten.merge(stats, on="code")
     buurten["geometry"] = buurten.geometry.simplify(4)
-    cols = ["code", "naam", "residents", "aged_65_plus", "pet_mean", "extreme_share", "shade_15h"]
+    cols = ["code", "naam", "residents", "aged_65_plus", "pet_mean", "extreme_share", "shade_15h",
+            "walk_shade_15h", "homes_near_cool", "homes_near_park"]
     gj = json.loads(buurten[[*cols, "geometry"]].to_crs(4326).round(4).to_json())
     routes = read_vector(city / "ams_plushoofdnetten.geojson")
     routes = routes[routes["VOET"].isin(["PLUS", "HOOFD"])].clip(area)

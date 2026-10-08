@@ -13,10 +13,11 @@ A 1 m tile takes 43 s the first time and 10 s for every further day, since walls
 ## Phase 1, trustworthy (about 2 weeks of evenings)
 
 1. Keep the static part of each tile across days. Done.
-2. Air temperature in the city. The model uses Schiphol air temperature, while streets are warmer. Add an urban heat island correction from the 2015 PANGAEA network and the WUR street stations of summer 2025 and 2026, two of which are in Nieuw-West.
-3. Run all of Nieuw-West on the reference hot day (1 July 2015) and stitch the tiles. Done: 177 tiles, 64 neighbourhoods with residents. In 31 of them, home to 85,000 people, more than half of the outdoor space is above 41 C PET in the afternoon. Next: the route shade and cool spot checks on the stitched district, so cool spots just outside a tile count.
-4. Pick the demo neighbourhood inside Nieuw-West with a screen of shade on main routes, distance to cool spots, and vulnerability (elderly residents, income, CBS).
-5. Add a real heatwave day (25 July 2019) and check the street stations against the model on hot days in 2025 and 2026.
+2. Air temperature in the city. Done: an afternoon heat island fitted to 45 street stations (AAMS 2015, WUR 2025 and 2026), about +0.5 K on land and cooler near water, added to PET (docs/uhi.md).
+3. Run all of Nieuw-West on the reference hot day (1 July 2015) and stitch the tiles. Done: 177 tiles.
+4. Guideline check on the whole district. Done: 10 of 43 main pedestrian streets have 40% shade at 15:00, 41 of 73 neighbourhoods miss 30% on their pavements. Every home is within 300 m of shaded public green, 45% within 300 m of a cool park of 1 ha (docs/guidelines_nieuw-west_2015-07-01.md).
+5. Screen for the demo neighbourhood. Done: De Aker-Oost, Middelveldsche Akerpolder and Osdorpplein lead (docs/screen_nieuw-west_2015-07-01.md).
+6. Validation against the WUR street globes. Done: no sunlit gap for a small globe (docs/validation_wur.md). Still to do: a real heatwave day (25 July 2019).
 
 ## Phase 2, useful (about 3 weeks)
 

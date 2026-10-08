@@ -78,6 +78,7 @@ td:first-child { text-align: left; white-space: normal; }
 tbody tr { cursor: pointer; }
 tbody tr:hover, tbody tr.sel { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 .bar { display: inline-block; height: 6px; border-radius: 1px; background: var(--hot); vertical-align: middle; margin-left: 6px; }
+td.fail { color: var(--hot); font-weight: 500; }
 .code { color: var(--muted); font-family: var(--font-num); font-size: 0.75rem; }
 
 .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px 32px; }
@@ -109,7 +110,7 @@ footer { font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--li
     <div class="tablebox">
       <div class="head">
         <h2>Neighbourhoods</h2>
-        <p>Outdoor land only, buildings and water left out. Neighbourhoods with fewer than 100 residents are not listed. Click a row to find it on the map.</p>
+        <p>PET over outdoor land, buildings and water left out. Pavement shade is on BGT walking areas; the guideline asks 30%. Red marks a miss. The guideline also asks a cool spot (shaded green, afternoon PET of 35 &deg;C or lower) within 300 m walking of every home; counting any public green of 1000 m&sup2; nearly every home in Nieuw-West passes, so the table shows the share within 300 m of a cool spot in a park of at least 1 ha. Neighbourhoods with fewer than 100 residents are not listed.</p>
       </div>
       <div class="scroll">
         <table>
@@ -119,7 +120,8 @@ footer { font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--li
             <th scope="col"><button data-k="aged_65_plus">65+</button></th>
             <th scope="col"><button data-k="pet_mean">PET &deg;C</button></th>
             <th scope="col"><button data-k="extreme_share">Above 41 &deg;C</button></th>
-            <th scope="col"><button data-k="shade_15h">Shade 15:00</button></th>
+            <th scope="col"><button data-k="walk_shade_15h">Pavement shade 15:00</button></th>
+            <th scope="col"><button data-k="homes_near_park">Homes near a cool park</button></th>
           </tr></thead>
           <tbody id="rows"></tbody>
         </table>
@@ -134,15 +136,15 @@ footer { font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--li
     </section>
     <section>
       <h2>The day</h2>
-      <p>1 July 2015, the reference hot day of the national PET map (Klimaateffectatlas), with hourly weather from KNMI Schiphol. The air temperature is Schiphol's, so streets are probably about 1 &deg;C warmer than shown; a correction from city stations comes next.</p>
+      <p>1 July 2015, the reference hot day of the national PET map (Klimaateffectatlas), with hourly weather from KNMI Schiphol. Afternoon air temperature adds the city's heat island fitted to 45 street stations (AAMS 2015 and WUR 2025 to 2026): about +0.5 &deg;C on land, cooler near water.</p>
     </section>
     <section>
       <h2>How it is made</h2>
-      <p>SOLWEIG computes sun, shade and radiation from 3D buildings and trees (AHN4, BAG, the city's 2023 summer infrared photo and tree register). Checked against HvA street measurements, felt temperature is within 1.9 &deg;C in tree shade and 3.7 &deg;C overall.</p>
+      <p>SOLWEIG computes sun, shade and radiation from 3D buildings and trees (AHN4, BAG, the city's 2023 summer infrared photo and tree register). Checked against HvA and WUR street measurements: felt temperature within 1.9 &deg;C in tree shade and 3.7 &deg;C overall against HvA, within 0.1 to 2.6 &deg;C on average against the WUR globes.</p>
     </section>
     <section>
       <h2>Not yet included</h2>
-      <p>The shade check on the pedestrian routes against the city's guideline (40% shade), distance to cool spots, and where new trees would help most. Those follow on this map.</p>
+      <p>Where new trees would help most. That follows on this map, for the neighbourhood picked from this table.</p>
     </section>
   </div>
 
@@ -182,7 +184,7 @@ const outlines = L.geoJSON(D.buurten, {
   onEachFeature: (f, layer) => {
     const p = f.properties;
     byCode[p.code] = layer;
-    layer.bindTooltip(`<b>${p.naam}</b><br>PET ${fmt(p.pet_mean)} °C, ${fmt(100 * p.extreme_share, 0)}% above 41 °C<br>shade at 15:00 ${fmt(100 * p.shade_15h, 0)}%`, { sticky: true });
+    layer.bindTooltip(`<b>${p.naam}</b><br>PET ${fmt(p.pet_mean)} °C, ${fmt(100 * p.extreme_share, 0)}% above 41 °C<br>pavement shade at 15:00 ${fmt(100 * p.walk_shade_15h, 0)}% (target 30%)<br>homes within 300 m of a cool spot ${fmt(100 * p.homes_near_cool, 0)}%, of a cool park ${fmt(100 * p.homes_near_park, 0)}%`, { sticky: true });
     layer.on("click", () => select(p.code, false));
   },
 }).addTo(map);
@@ -228,7 +230,8 @@ function render() {
       <td class="num">${int(p.aged_65_plus)}</td>
       <td class="num">${fmt(p.pet_mean)}</td>
       <td class="num">${fmt(100 * p.extreme_share, 0)}%<span class="bar" style="width:${Math.round(40 * p.extreme_share)}px"></span></td>
-      <td class="num">${fmt(100 * p.shade_15h, 0)}%</td>
+      <td class="num ${p.walk_shade_15h != null && p.walk_shade_15h < 0.3 ? "fail" : ""}">${fmt(100 * p.walk_shade_15h, 0)}%</td>
+      <td class="num">${fmt(100 * p.homes_near_park, 0)}%</td>
     </tr>`).join("");
   document.querySelectorAll("th button").forEach(b => {
     if (b.dataset.k === sortKey) b.setAttribute("aria-sort", desc ? "descending" : "ascending");
