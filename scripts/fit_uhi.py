@@ -75,8 +75,11 @@ def wur() -> tuple[pd.DataFrame, pd.DataFrame]:
         df = pd.read_csv(d / f"distributed_network_{y}.csv", skiprows=[1], na_values="NaN")
         df.index = pd.to_datetime(df.pop("Timestamp")).dt.tz_localize("UTC")
         ta = df[[c for c in df if c.startswith("DN_TA_")]]
-        # mean over [h, h+1) UTC, labelled by the end of the hour as KNMI does
-        frames.append(ta.resample("1h", label="right", closed="left").mean())
+        # KNMI hourly temperature is a reading at the full hour, so take the station
+        # readings within 10 minutes of each full hour rather than an hourly mean
+        near = ta.index.round("1h")
+        close = (ta.index - near).to_series().abs().to_numpy() <= pd.Timedelta(minutes=10)
+        frames.append(ta[close].groupby(near[close]).mean())
     ta = pd.concat(frames)
     ta.columns = ["W" + c.split("_")[2] for c in ta.columns]
     meta = st.assign(station="W" + st["station"].astype(str), network="WUR 2025 to 2026")
