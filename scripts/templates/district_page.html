@@ -16,6 +16,7 @@ __LEAFLET_CSS__
   --accent: #0d6b62;
   --hot: #b63a2b;
   --map-ground: #e6e9e7;
+  --gain: #2f9e44;
   --font-ui: "Public Sans", "Helvetica Neue", Arial, sans-serif;
   --font-num: "IBM Plex Mono", ui-monospace, Menlo, monospace;
   --step-0: 0.9375rem;
@@ -26,14 +27,15 @@ __LEAFLET_CSS__
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #141816; --surface: #1c211f; --fg: #e4e8e6; --muted: #9aa5a0; --line: #333b38;
-    --accent: #5cc2b5; --hot: #f08a6f; --map-ground: #262c29; color-scheme: dark;
+    --accent: #5cc2b5; --hot: #f08a6f; --map-ground: #262c29; --gain: #74e08a; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #141816; --surface: #1c211f; --fg: #e4e8e6; --muted: #9aa5a0; --line: #333b38;
-  --accent: #5cc2b5; --hot: #f08a6f; --map-ground: #262c29; color-scheme: dark;
+  --accent: #5cc2b5; --hot: #f08a6f; --map-ground: #262c29; --gain: #74e08a; color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: var(--step-0);
   line-height: 1.5; padding-inline: clamp(16px, 4vw, 48px); padding-block: 28px 48px;
@@ -57,6 +59,7 @@ h2 { font-size: var(--step-1); margin: 0; text-wrap: balance; }
 .seg button { font: inherit; font-size: 0.85rem; padding: 6px 12px; border: 0; background: transparent; color: var(--fg); cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
 .seg button:focus-visible, th button:focus-visible, tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.swatch { width: 14px; height: 10px; border-radius: 2px; background: var(--gain); }
 .check { display: inline-flex; gap: 6px; align-items: center; font-size: 0.85rem; cursor: pointer; }
 .check input { accent-color: var(--accent); }
 .legend { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--muted); }
@@ -127,7 +130,7 @@ footer { font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--li
           <button id="btn-shade" aria-pressed="false">Shade at 15:00</button>
         </div>
         <div class="legend" id="legend-pet"><span class="num" id="lo"></span><span class="ramp"></span><span class="num" id="hi"></span><span>PET, 12:00 to 18:00</span></div>
-        <div class="legend" id="legend-shade" hidden><span>sun</span><span class="ramp shade"></span><span>shade</span></div>
+        <div class="legend" id="legend-shade" hidden><span>sun</span><span class="ramp shade"></span><span>shade</span><span class="swatch"></span><span>added by new trees</span></div>
       </div>
       <div id="map" aria-label="Map of felt temperature in Nieuw-West"></div>
     </div>
@@ -157,7 +160,7 @@ footer { font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--li
   <section class="game" id="game" aria-labelledby="game-title">
     <div class="game-head">
       <h2 id="game-title">Plant the trees</h2>
-      <p>Pick a neighbourhood and plant the proposed trees in the order the search chose them, best spot first. The bars show shade on the pavements at 15:00 against the city's targets.</p>
+      <p>Pick a neighbourhood and plant the proposed trees in the order the search chose them, best spot first. On the map, grey is shade there already and green is the shade each new tree adds at 15:00. The bars show shade on the pavements against the city's targets.</p>
     </div>
     <div class="game-body">
       <div class="seg" role="group" aria-label="Neighbourhood" id="game-plans"></div>
@@ -243,6 +246,7 @@ function setLayer(k) {
 document.getElementById("btn-pet").onclick = () => setLayer("pet");
 document.getElementById("btn-shade").onclick = () => setLayer("shade");
 
+const shadeAdded = L.layerGroup().addTo(map);
 let treeLayer = L.layerGroup().addTo(map);
 const games = D.games || [];
 let game = 0, playing = null;
@@ -266,6 +270,15 @@ function plant(n, animate = false) {
   range.max = g.trees; range.value = n;
   document.getElementById("game-count").textContent = `${n} / ${g.trees} 🌳`;
   treeLayer.clearLayers();
+  shadeAdded.clearLayers();
+  if (D.shade_added) {
+    D.shade_added.features.filter(f => f.properties.plan === g.label && f.properties.rank <= n).forEach(f => {
+      const newest = animate && f.properties.rank === n;
+      shadeAdded.addLayer(L.geoJSON(f, { interactive: false, style: {
+        color: css(newest ? "--hot" : "--gain"), weight: newest ? 2 : 0.5,
+        fillColor: css("--gain"), fillOpacity: newest ? 1 : 0.85 } }));
+    });
+  }
   treesOf(g.label).slice(0, n).forEach((f, i) => {
     const [lon, lat] = f.geometry.coordinates;
     const m = L.marker([lat, lon], { icon: animate && i === n - 1 ? icon : L.divIcon({ className: "", html: '<div class="tree-icon">🌳</div>', iconSize: [18, 18], iconAnchor: [9, 14] }), keyboard: false });
@@ -283,7 +296,7 @@ function plant(n, animate = false) {
 }
 
 function choose(i) {
-  game = i; stop();
+  game = i; stop(); setLayer("shade");
   document.querySelectorAll("#game-plans button").forEach((b, j) => b.setAttribute("aria-pressed", j === i));
   const pts = treesOf(games[i].label).map(f => [f.geometry.coordinates[1], f.geometry.coordinates[0]]);
   if (pts.length) map.fitBounds(pts, { padding: [40, 40], maxZoom: 16 });
@@ -294,9 +307,10 @@ function stop() { clearInterval(playing); playing = null; document.getElementByI
 if (games.length) {
   document.getElementById("game-plans").innerHTML = games.map((g, i) => `<button aria-pressed="false">${g.label}</button>`).join("");
   document.querySelectorAll("#game-plans button").forEach((b, i) => b.onclick = () => choose(i));
-  document.getElementById("game-range").oninput = e => { stop(); plant(+e.target.value); };
+  document.getElementById("game-range").oninput = e => { stop(); setLayer("shade"); plant(+e.target.value); };
   document.getElementById("game-play").onclick = () => {
     if (playing) return stop();
+    setLayer("shade");
     const g = games[game];
     let n = +document.getElementById("game-range").value;
     if (n >= g.trees) n = 0;

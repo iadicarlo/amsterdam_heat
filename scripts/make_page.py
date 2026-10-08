@@ -82,6 +82,13 @@ def main() -> None:
                          f"from {100 * b['pavement_shade_15']:.0f}% to {100 * a['pavement_shade_15']:.0f}%{route}. "
                          f"Under the new crowns afternoon PET drops by {a['pet_drop_where_shaded']:.1f} &deg;C.")
     tj = json.loads(pd.concat(plans)[["plan", "rank", "on", "geometry"]].to_json()) if plans else None
+    patches = []
+    for f in sorted((ROOT / "data" / "processed" / "trees").glob("*/shade_added.geojson")):
+        meta = json.loads((f.parent / "summary.json").read_text())
+        g = gpd.read_file(f).set_crs(28992, allow_override=True)
+        g["geometry"] = g.geometry.simplify(0.5)
+        patches.append(g.to_crs(4326).assign(plan=meta["buurten"])[["plan", "rank", "geometry"]])
+    sj = json.loads(pd.concat(patches).round(6).to_json()) if patches else None
     games = []  # smallest plan first
     for d_plan in sorted((ROOT / "data" / "processed" / "trees").glob("*/summary.json")):
         meta = json.loads(d_plan.read_text())
@@ -117,7 +124,7 @@ def main() -> None:
         "__LEAFLET_CSS__": requests.get(LEAFLET_CSS, timeout=60).text,
         "__DATA__": json.dumps({
             "date": args.date, "summary": summary, "range": PET_RANGE, "buurten": gj, "routes": rj,
-            "trees": tj, "games": games,
+            "trees": tj, "games": games, "shade_added": sj,
             "overlays": {"pet": {"src": data_uri(page / "pet.png"), "bounds": b_pet},
                          "shade": {"src": data_uri(page / "shade.png"), "bounds": b_shade}},
         }),

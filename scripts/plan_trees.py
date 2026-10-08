@@ -4,7 +4,8 @@
     uv run python scripts/plan_trees.py --name de-aker --buurt FG03 FG01
 
 Works on the district run of the reference day (default Nieuw-West, 1 July 2015).
-Walking areas inside the neighbourhoods are the target: a pixel shaded at 11:00,
+Walking areas inside the neighbourhoods and within 100 m of homes, shops, schools,
+care, community, hotel or sports buildings (BAG) are the target: a pixel shaded at 11:00,
 15:00 or 17:00 counts once, 15:00 twice, and pixels within 15 m of a pedestrian
 PLUS or HOOFD route twice again. Trees are added until the pavements have 30% shade
 and the route pavements 40% at 15:00, or --max trees. Candidates lie on public
@@ -24,9 +25,10 @@ import numpy as np
 import pandas as pd
 import pvlib
 import rasterio
+from rasterio.features import shapes
 from rasterio.transform import Affine, from_origin
 from scipy.ndimage import distance_transform_edt
-from shapely.geometry import Point, box
+from shapely.geometry import Point, box, shape
 
 from amsterdam_heat import guidelines as gl
 from amsterdam_heat import planting as pl
@@ -38,6 +40,8 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[1]
 TILE, BUFFER, MARGIN = 500, 100, 60
 HOUR_WEIGHT = {11: 1.0, 15: 2.0, 17: 1.0}
+PEOPLE_REACH = 100.0  # m
+PEOPLE_USES = ("woon", "winkel", "onderwijs", "gezondheidszorg", "bijeenkomst", "logies", "sport")
 PATCH = 26  # m, reach of a 12 m tree's shadow at a low afternoon sun, plus its crown
 ROUTE_REACH = 15.0
 GREEN_TYPES = {"groenvoorziening", "grasland overig"}
@@ -49,6 +53,20 @@ class Grid:
     transform: Affine
     shape: tuple[int, int]
     res: float = 1.0
+
+
+def people_near(tiles, win, grid) -> np.ndarray:
+    """Cells within PEOPLE_REACH of a building where people live, shop, learn, get care,
+    meet, stay or do sport (BAG use). Pavement along business parks and offices only
+    does not count towards the targets."""
+    bags = [gpd.read_file(ROOT / "data" / "raw" / f"{x}_{y}" / "bag_pand.geojson", bbox=box(*win).bounds)
+            for x, y in tiles if box(x, y, x + TILE, y + TILE).intersects(box(*win).buffer(PEOPLE_REACH))
+            and (ROOT / "data" / "raw" / f"{x}_{y}" / "bag_pand.geojson").exists()]
+    bag = pd.concat(bags).set_crs(gl.CRS, allow_override=True).drop_duplicates("identificatie")
+    uses = bag["gebruiksdoel"].astype(str)
+    lively = bag[uses.str.contains("|".join(PEOPLE_USES))]
+    mask = gl._raster(lively.geometry, grid).astype(bool)
+    return distance_transform_edt(~mask) <= PEOPLE_REACH
 
 
 def window(bounds):
@@ -133,7 +151,8 @@ def main() -> None:
     route_lines = gl._raster(routes.geometry, grid).astype(bool) if len(routes) else np.zeros(grid.shape, bool)
     near_route = distance_transform_edt(~route_lines) <= ROUTE_REACH if route_lines.any() else route_lines
 
-    target = walk & inside & (lc != 2) & (lc != 7)
+    people = people_near(tiles, win, grid)
+    target = walk & inside & (lc != 2) & (lc != 7) & people
     route_target = target & near_route
     weight = np.where(target, 1.0, 0.0) + np.where(route_target, 1.0, 0.0)
     sunlit = {h: ~gl.shaded_at(shadow, h) for h in HOUR_WEIGHT}
@@ -168,9 +187,13 @@ def main() -> None:
 
     # replay to record the shade after each tree
     state = new_state()
-    steps = []
+    steps, added = [], []
     for i, r in chosen.iterrows():
+        was = state.shaded(15) & target
         state.add((int(r["row"]), int(r["col"])))
+        new = state.shaded(15) & target & ~was
+        for geom, _ in shapes(new.astype("uint8"), mask=new, transform=grid.transform):
+            added.append({"rank": i + 1, "geometry": shape(geom)})
         pave, route = shares(state)
         steps.append({"trees": i + 1, "pavement_shade_15": pave, "route_shade_15": route,
                       "pavement_shade_11": float(state.shaded(11)[target].mean()),
@@ -185,6 +208,9 @@ def main() -> None:
     gdf = gpd.GeoDataFrame({"rank": np.arange(1, len(chosen) + 1), "gain": chosen["gain"].round(1), "on": on},
                            geometry=[Point(x, y) for x, y in zip(xs, ys, strict=True)], crs=gl.CRS)
     gdf.to_file(out / "trees.geojson", driver="GeoJSON")
+    if added:
+        gpd.GeoDataFrame(added, crs=gl.CRS).dissolve("rank").reset_index().to_file(
+            out / "shade_added.geojson", driver="GeoJSON")
     summary = {"name": args.name, "buurten": names, "codes": args.buurt, "trees": len(gdf),
                "candidates": len(cands), "pavement_m2": int(target.sum()),
                "route_m2": int(route_target.sum()),
