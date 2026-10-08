@@ -25,5 +25,7 @@ On the De Pijp tile, AHN alone covers 90% of register trees, summer NDVI 98%, an
 |---|---|---|---|
 | HvA Thermal comfort Amsterdam | Globe temperature and weather at 21 sites, 12 summer afternoons, 2015 and 2016 | CC BY 4.0 | In use |
 | UMEP SOLWEIG code | Shadows and sky view factors on the same inputs | GPL-3.0 | In use |
-| WUR / AMS station network | 24 stations since 2014, some with globe temperature | CC BY-NC 4.0 | To request (maq-observations.nl) |
-| Landsat surface temperature | Broad hot and cool pattern | public domain | Not yet used |
+| WUR MAQ Amsterdam, rooftop | Radiation and weather on the rooftop mast, 1 minute, July 2019 and July 2022 | CC BY-NC 4.0 | Downloaded |
+| WUR MAQ Amsterdam, Distributed Network | 23 street stations, air temperature, humidity and wind every 20 minutes, black globe at 6 of them, summers 2025 and 2026 | CC BY-NC 4.0 | Downloaded |
+| PANGAEA Amsterdam network 2015 | Air temperature at 24 stations | CC BY 3.0 | In use (heat island) |
+| Landsat 8 and 9, ECOSTRESS | Surface temperature on hot days, 2015 to 2026 | public domain | In use |

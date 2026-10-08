@@ -6,22 +6,17 @@ The aim is one convincing demo for the Gemeente Amsterdam: a district where the 
 
 ## Where we are
 
-Done: data pipeline from open sources, SOLWEIG-GPU on the Mac GPU (checked against CPU and UMEP), leaf-on trees from the city's summer photo and tree register, PET with GLIDE-SOL street wind, the guideline check (shade on routes, cool spots within 300 m), one tile (De Pijp).
+Done: data pipeline from open sources, SOLWEIG-GPU on the Mac GPU with Metal kernels (checked against CPU and UMEP), leaf-on trees from the city's summer photo and tree register, PET with GLIDE-SOL street wind, the guideline check (shade on routes, cool spots within 300 m), validation against the HvA measurements, Landsat and ECOSTRESS hot-day series, and one tile (De Pijp).
 
-Running: validation against the HvA measurements, full-day timing of the fused Metal kernel.
-
-## Phase 0, now (this week)
-
-1. Finish the HvA validation and write it up.
-2. Merge the Metal kernel if the full-day timing confirms the gain; the background agent then fuses the hourly sky-patch code.
-3. Request the WUR/AMS station data (maq-observations.nl).
+A 1 m tile takes 43 s the first time and 10 s for every further day, since walls, aspect and sky view factors are kept per tile.
 
 ## Phase 1, trustworthy (about 2 weeks of evenings)
 
-1. Air temperature in the city. The model uses Schiphol air temperature, while the squares are warmer. Add a simple urban heat island correction and check it against the HvA and WUR data.
-2. Several tiles at once. Run and stitch neighbouring tiles so cool spots just outside a tile count, and remove the tile-edge bias in the 300 m check.
-3. Pick the demo neighbourhood inside Nieuw-West with a screen of shade on main routes, distance to cool spots, and vulnerability (elderly residents, income, CBS).
-4. Run the demo district on the reference hot day (1 July 2015) and a real heatwave (25 July 2019).
+1. Keep the static part of each tile across days. Done.
+2. Air temperature in the city. The model uses Schiphol air temperature, while streets are warmer. Add an urban heat island correction from the 2015 PANGAEA network and the WUR street stations of summer 2025 and 2026, two of which are in Nieuw-West.
+3. Run all of Nieuw-West on the reference hot day (1 July 2015) and stitch the tiles, so cool spots just outside a tile count.
+4. Pick the demo neighbourhood inside Nieuw-West with a screen of shade on main routes, distance to cool spots, and vulnerability (elderly residents, income, CBS).
+5. Add a real heatwave day (25 July 2019) and check the street stations against the model on hot days in 2025 and 2026.
 
 ## Phase 2, useful (about 3 weeks)
 
@@ -50,9 +45,5 @@ Rerun the reference day and real heatwaves under 2050 and 2100 climates, using e
 
 ## In the background
 
-- Metal acceleration of the remaining hourly code.
-- City-wide 1 m runs overnight once the kernel is merged (about 900 tiles).
-
-## Demo district
-
-Chosen in phase 1: the district with the clearest gap against the guidelines that is also a city priority (Nieuw-West and Zuidoost have their own master plans in the 2026 coalition agreement).
+- City-wide 1 m runs overnight (about 900 tiles, roughly 11 hours for the first day).
+- The sun bias against the HvA globes: test whether it comes from comparing a globe with a standing person.
