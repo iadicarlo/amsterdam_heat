@@ -153,6 +153,12 @@ def build(
 
     # bare earth: AHN4 DTM has holes under buildings and water, fill them
     dtm05 = fillnodata(dtm05, mask=~np.isnan(dtm05), max_search_distance=200)
+    # the middle of lakes wider than that stays empty; one NaN spoils the shadows of
+    # the whole tile, so set it to the level of the filled water around it
+    if np.isnan(dtm05).any():
+        around = dtm05[water05 & ~np.isnan(dtm05)]
+        level = np.median(around) if around.size else np.nanpercentile(dtm05, 5)
+        dtm05 = np.where(np.isnan(dtm05), level, dtm05)
     dsm05 = np.where(np.isnan(dsm05), dtm05, dsm05)
 
     dsm = _block(dsm05, k, "max")
