@@ -1,0 +1,4 @@
+[submodule "external/solweig-gpu"]
+	path = external/solweig-gpu
+	url = https://github.com/iadicarlo/SOLWEIG-GPU.git
+	branch = apple-mps

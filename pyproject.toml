@@ -24,6 +24,11 @@ dependencies = [
     "tqdm",
     "matplotlib",
     "pvlib",
+    "gdal==3.13.3",
+    "numba>=0.68.0",
+    "pytz>=2026.5",
+    "timezonefinder>=9.0.0",
+    "solweig-gpu",
 ]
 
 [project.optional-dependencies]
@@ -41,3 +46,10 @@ packages = ["src/amsterdam_heat"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.uv.sources]
+solweig-gpu = { path = "external/solweig-gpu", editable = true }
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

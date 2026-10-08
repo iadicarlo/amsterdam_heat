@@ -18,6 +18,7 @@ DOIS = {
     "lindberg2018umep": "10.1016/j.envsoft.2017.09.020",
     "wallenberg2020anisotropic": "10.1016/j.uclim.2020.100589",
     "kamath2026solweiggpu": "10.21105/joss.09535",
+    "zonato2026glidesol": "10.5194/gmd-19-7389-2026",
     "brode2011utci": "10.1007/s00484-011-0454-1",
     "koopmans2020pet": "10.1016/j.buildenv.2020.106984",
     "briegel2023unet": "10.1016/j.uclim.2022.101359",

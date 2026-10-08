@@ -11,6 +11,7 @@ One line per paper on why it matters here. Keys match `references.bib`. Every en
 | `wallenberg2020anisotropic` | Anisotropic diffuse sky radiation, part of SOLWEIG 2022a which SOLWEIG-GPU implements. |
 | `lindberg2018umep` | UMEP, the QGIS toolbox SOLWEIG lives in. Reference implementation for checking our GPU results. |
 | `kamath2026solweiggpu` | SOLWEIG 2022a in PyTorch (GPL-3.0). Our starting code, patched to run on Apple MPS. |
+| `zonato2026glidesol` | GLIDE-SOL: global input building and diagnostic UHI around SOLWEIG-GPU (version 2 of the package). Shows how far the same engine scales; their global inputs are coarser than AHN4 and BAG, which is our edge for Amsterdam. |
 | `brode2011utci` | Operational UTCI polynomial. Converts Tmrt, air temperature, wind and humidity into heat stress classes. |
 
 ## Dutch context

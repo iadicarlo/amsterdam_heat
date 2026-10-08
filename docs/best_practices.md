@@ -16,6 +16,15 @@ Working rules for this project. Short on purpose.
 - SOLWEIG-GPU is GPL-3.0, so this repository is GPL-3.0 too. Keep our patches in a fork, not copied into `src/`.
 - Check the licence of every pretrained model before using its output in anything shared with the Gemeente.
 
+## Known pitfalls (found on the first tile)
+
+- **Ground below sea level.** SOLWEIG, like UMEP, uses 0 in the vegetation surface to mean "no tree". Ground below 0 m NAP then sees phantom vegetation above it and is shaded. Most of Amsterdam is below NAP. `tile_inputs.py` lifts all elevations by `ELEVATION_OFFSET` (20 m), which leaves the physics unchanged. Never feed raw NAP heights to SOLWEIG.
+- **Aerial photos are leaf-off.** The national Beeldmateriaal flights are in early spring, so deciduous trees are bare and NDVI misses most street trees. Do not use spring NDVI to decide where trees are. Use AHN height (with a size filter), the city tree register, or a summer source.
+- **AHN4 is leaf-off too.** It was flown in winter, so canopy height is fine but canopy density is underestimated. Keep this in mind when comparing shade with summer observations.
+- **BAG GeoJSON from PDOK has RD coordinates but no CRS member.** GeoJSON readers then assume WGS84. Always `set_crs(28992, allow_override=True)`.
+- **PDOK CIR WMS serves JPEG only.** We georeference it from the request box.
+- **Met file hours.** SOLWEIG-GPU wants local clock hours 0 to 23 within one date, labelled by the end of the hour. KNMI hours are UT and also end-of-hour.
+
 ## Modelling
 
 - Before trusting the GPU port, reproduce a UMEP/SOLWEIG reference run on one tile and compare Tmrt cell by cell. Write down the tolerance we accept.

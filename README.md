@@ -13,13 +13,36 @@ It is a screening tool meant to support planning, not a replacement for detailed
 
 ## Setup
 
-Requires [uv](https://docs.astral.sh/uv/).
+Requires [uv](https://docs.astral.sh/uv/) and GDAL (on macOS: `brew install gdal`; the Python
+bindings in `pyproject.toml` are pinned to the Homebrew version).
 
 ```bash
+git clone --recursive https://github.com/iadicarlo/amsterdam_heat.git
 uv sync                  # core environment
 uv sync --extra ml       # imagery models (samgeo, DeepForest)
 uv run python -c "import torch; print(torch.backends.mps.is_available())"
 ```
+
+## Running one tile
+
+```bash
+# download open data and build SOLWEIG inputs for a 500 m tile (RD New lower left corner)
+uv run python scripts/make_tile.py --x 121500 --y 485000 --date 2019-07-25
+# shade, mean radiant temperature and UTCI for every hour of that day, on the Mac GPU
+uv run python scripts/run_solweig.py --tile 121500_485000 --date 2019-07-25 --device mps --fresh
+uv run python scripts/plot_tile.py --tile 121500_485000 --device mps --hour 15
+```
+
+The radiation model is SOLWEIG-GPU, used through a fork that adds Apple Silicon (MPS) support:
+`external/solweig-gpu` (branch `apple-mps`). Clone with `git clone --recursive`.
+
+On an M4 MacBook Pro a 700 × 700 m tile at 1 m (500 m plus a 100 m buffer) takes about
+2.3 minutes for a full day on the GPU: about 36 seconds for the sky view factor, which is
+cached and reused for other days, and about 80 seconds for 24 hourly radiation steps.
+GPU and CPU results agree to within 0.001 K
+([validation](docs/validation_121500_485000_mps_vs_cpu.md)).
+
+![Shade, mean radiant temperature and UTCI in De Pijp, 25 July 2019, 15:00](figures/121500_485000_mps_h15.png)
 
 ## Layout
 
