@@ -21,8 +21,9 @@ A 1 m tile takes 43 s the first time and 10 s for every further day, since walls
 ## Phase 2, useful (about 3 weeks)
 
 1. Plantable space: pavement and squares wide enough for a tree, from the BGT and the summer photo, away from building fronts and existing crowns. Underground cables are not in open data; flag that as the city's check.
-2. Tree placement: rank candidate spots by how much they raise shade on the PLUS and HOOFD routes and bring homes within 300 m of a cool spot, weighted towards elderly residents, schools and care homes. Start with a greedy search that reruns the physics locally (fast with the Metal kernel); a learned surrogate only if speed demands it.
-3. Before and after: shade percentages and cool-spot coverage for the top 50 or 100 trees.
+2. Tree placement: rank candidate spots by how much they raise shade on the PLUS and HOOFD routes and bring homes within 300 m of a cool spot, weighted towards elderly residents, schools and care homes. Greedy search on the marginal gain with local SOLWEIG reruns, as TreePlanter (Wallenberg et al. 2022), then a swap pass for the cool spot rule. A learned surrogate only to pre-filter candidates city-wide, with the chosen spots rerun in SOLWEIG.
+3. Explaining the choice: for each chosen spot, the shade hours it adds on a route and the homes it brings near a cool spot. A side figure with gradient boosting and SHAP on our own model output shows which street features drive heat.
+4. Before and after: shade percentages and cool-spot coverage for the top 50 or 100 trees.
 
 ## Phase 3, pitch (about 1 week)
 
