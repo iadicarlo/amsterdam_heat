@@ -42,3 +42,6 @@ See [utilities.md](utilities.md). Used to screen tree spots, not to replace a KL
 | Street lighting cables | Gemeente Amsterdam `leidingeninfrastructuur` | CC BY | |
 | Gas transmission | Gemeente Amsterdam `risicozones` | public | |
 | District heating and cold | Vattenfall via Maps Amsterdam open geodata | Maps Amsterdam terms | May 2025 |
+| Electricity stations and LS cabinets | Liander Open Data Elektra (ArcGIS) | CC BY 4.0 | Points |
+| Street lighting ducts | Gemeente Amsterdam `leidingeninfrastructuur` | CC BY | |
+| Fire hydrants, street cabinets | BGT plus objects `put` and `kast` via PDOK | CC0 | Proxy for water mains and telecom; cabinet type left empty |

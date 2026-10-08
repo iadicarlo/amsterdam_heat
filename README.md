@@ -47,6 +47,7 @@ All open: AHN4 heights, BAG and BGT (PDOK), the Gemeente Amsterdam 2023 summer i
 - [roadmap.md](docs/roadmap.md): what comes next
 - [best_practices.md](docs/best_practices.md): working rules and known pitfalls
 - [style.md](docs/style.md): how we write in this repository
+- [utilities.md](docs/utilities.md): cables, pipes, hydrants and cabinets from open data, checked against the tree plans
 - [paris.md](docs/paris.md): the same pipeline for Paris
 - [references/reading_notes.md](references/reading_notes.md): the papers we build on
 

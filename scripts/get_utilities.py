@@ -27,6 +27,20 @@ CITY = {
     "citation": "Gemeente Amsterdam, Kabels en leidingen ondergrond, data.amsterdam.nl",
 }
 
+def _stations(out: Path) -> Path:
+    """Liander HS, MS and LS stations as one point file with column ``layer``."""
+    features = []
+    for layer in ("station_hs", "station_ms", "station_ls"):
+        tmp = src.liander_network(layer, BBOX, out.with_name(f"{layer}.geojson"))
+        for f in json.loads(tmp.read_text())["features"]:
+            f["properties"]["layer"] = layer
+            features.append(f)
+        tmp.unlink()
+        tmp.with_suffix(tmp.suffix + ".source.json").rename(out.with_suffix(f".{layer}.source.json"))
+    out.write_text(json.dumps({"type": "FeatureCollection", "features": features}))
+    return out
+
+
 DATASETS = {
     "liander_ls": (lambda p: src.liander_network("ls", BBOX, p), LIANDER),
     "liander_ms": (lambda p: src.liander_network("ms", BBOX, p), LIANDER),
@@ -40,6 +54,15 @@ DATASETS = {
                                                              bbox=BBOX, near=None),
                          {"url": "https://api.data.amsterdam.nl/v1/risicozones/", "licence": "public",
                           "citation": "Gemeente Amsterdam, Risicozones, aardgasleidingen"}),
+    "liander_stations": (lambda p: _stations(p), {**LIANDER, "citation": LIANDER["citation"]
+                                                  + ", stations en LS kasten"}),
+    "street_lighting_ducts": (lambda p: src.amsterdam_underground("amsterdam_ovl_mantelbuizen", p,
+                                                                  bbox=BBOX, near=None), CITY),
+    "bgt_points": (lambda p: src.bgt_utility_points(BBOX, p),
+                   {"url": "https://api.pdok.nl/lv/bgt/ogc/v1/collections/put",
+                    "licence": "CC0 1.0",
+                    "citation": "Basisregistratie Grootschalige Topografie (BGT), plus objects put "
+                                "(brandkraan) and kast, Gemeente Amsterdam via PDOK"}),
     "district_heating": (src.amsterdam_heat_network,
                          {"url": "https://maps.amsterdam.nl/open_geodata/?k=224",
                           "licence": "Maps Amsterdam open geodata terms (any lawful use)",

@@ -265,12 +265,16 @@ LIANDER_LAYERS = {
     "ms": ("Liander_Open_Data_Elektra", 424),  # middenspanningskabel
     "hs": ("Liander_Open_Data_Elektra", 632),  # hoogspanningskabel, underground
     "gas": ("Liander_Open_Data_Gas", 0),  # gasleiding, no pressure or diameter
+    "station_hs": ("Liander_Open_Data_Elektra", 641),  # hoogspanningsstation, points
+    "station_ms": ("Liander_Open_Data_Elektra", 642),  # middenspanningsstation, points
+    "station_ls": ("Liander_Open_Data_Elektra", 643),  # LS kast, points
 }
 
 
 def liander_network(layer: str, bbox: tuple[float, float, float, float], out: Path,
                     page: int = 2000) -> Path:
     """Liander cables or gas pipes (``ls``, ``ms``, ``hs`` or ``gas``) crossing the box,
+    or stations and LS cabinets as points (``station_hs``, ``station_ms``, ``station_ls``),
     GeoJSON in EPSG:28992. House connections are not in the open set."""
     service, lid = LIANDER_LAYERS[layer]
     url = f"{LIANDER_ARCGIS}/{service}/FeatureServer/{lid}/query"
@@ -336,4 +340,27 @@ def amsterdam_heat_network(out: Path) -> Path:
     params = {"KAARTLAAG": "STADSWARMTEKOUDE", "THEMA": "stadswarmtekoude"}
     out.write_text(_get(url, params).text)
     _record(out, url, params, "Vattenfall Warmte via Gemeente Amsterdam open geodata")
+    return out
+
+
+def bgt_utility_points(bbox: tuple[float, float, float, float], out: Path) -> Path:
+    """Fire hydrants (BGT ``put`` with plus-type brandkraan) and street cabinets (BGT
+    ``kast``) in the box, one GeoJSON with column ``kind``. Amsterdam leaves the cabinet
+    type empty, so electricity, telecom and traffic cabinets are not told apart.
+    Hydrants sit on a branch of a drinking water main, the only open trace of that network."""
+    features = []
+    for collection, kind in (("put", "hydrant"), ("kast", "cabinet")):
+        tmp = out.with_name(f"{out.stem}_{collection}.geojson")
+        bgt_collection(collection, bbox, tmp)
+        for f in json.loads(tmp.read_text())["features"]:
+            plus = f["properties"].get("plus_type")
+            if collection == "put" and plus != "brandkraan / -put":
+                continue
+            features.append({"type": "Feature", "geometry": f["geometry"],
+                             "properties": {"kind": kind, "plus_type": plus,
+                                            "lokaal_id": f["properties"].get("lokaal_id")}})
+        tmp.unlink()
+        tmp.with_suffix(tmp.suffix + ".source.json").unlink(missing_ok=True)
+    out.write_text(json.dumps({"type": "FeatureCollection", "features": features}))
+    _record(out, f"{BGT_OGC}/put,kast/items", {"bbox": bbox}, "BGT, Kadaster via PDOK, CC0")
     return out

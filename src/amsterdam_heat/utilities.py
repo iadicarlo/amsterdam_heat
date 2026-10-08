@@ -1,10 +1,11 @@
 """Cables and pipes from open data, and where a new tree trunk may not go.
 
 Layers come from scripts/get_utilities.py (data/raw/utilities). Open data covers
-Liander electricity and gas, Waternet sewers, Vattenfall district heating, city
-street lighting cables and the gas transmission line. Drinking water, telecom and
-house connections for electricity and gas are not open, so a clear result here does
-not replace the city's KLIC check.
+Liander electricity and gas (cables, pipes, stations and LS cabinets), Waternet
+sewers, Vattenfall district heating, city street lighting cables and ducts and the
+gas transmission line. Drinking water mains and telecom cables are not open; the
+only open traces are fire hydrants and untyped street cabinets from the BGT, used
+here as point clearances. A clear result does not replace the city's KLIC check.
 
 Clearances are from the trunk centre to the pipe or cable centreline. The defaults
 are a screening minimum; Stedin advises 2.5 m from the tree centre to the edge of
@@ -32,29 +33,39 @@ CLEARANCE = {
     "sewer": 2.0,  # Waternet sewers, pressure and transport mains
     "sewer_connection": 1.0,  # house and gully connections, drains
     "district_heating": 2.0,  # Vattenfall heat and cold networks
+    "electricity_station": 2.0,  # Liander HS, MS stations and LS cabinets, cables fan out
+    "hydrant": 1.5,  # BGT fire hydrant, on a branch of a drinking water main
+    "cabinet": 1.5,  # BGT street cabinet: electricity, telecom, cable TV or traffic
 }
 
 SEWER_CONNECTION = {"Aansluitleiding", "Drain"}
 
 
 def load_layers(root: Path = ROOT) -> dict[str, gpd.GeoDataFrame]:
-    """All open utility lines as one GeoDataFrame per type, EPSG:28992, in service only."""
+    """All open utility lines and points as one GeoDataFrame per type, EPSG:28992,
+    in service only. A layer that is not downloaded comes back empty."""
     def read(name):
-        return read_vector(root / name / f"{name}.geojson")
+        path = root / name / f"{name}.geojson"
+        return read_vector(path) if path.exists() else gpd.GeoDataFrame(geometry=[], crs=28992)
 
     elec = pd.concat([read(f"liander_{v}") for v in ("ls", "ms", "hs")], ignore_index=True)
     sewer = read("waternet_sewers")
     sewer = sewer[~sewer["status"].str.lower().str.startswith("vervallen")]
     connection = sewer["soort"].isin(SEWER_CONNECTION)
     heat = read("district_heating")
+    points = read("bgt_points")
     layers = {
         "electricity": elec,
-        "street_lighting": read("street_lighting"),
+        "street_lighting": pd.concat([read("street_lighting"), read("street_lighting_ducts")],
+                                     ignore_index=True),
         "gas": read("liander_gas"),
         "gas_transmission": read("gas_transmission"),
         "sewer": sewer[~connection],
         "sewer_connection": sewer[connection],
-        "district_heating": heat[heat["NETTYPE"] != "PLAN"],
+        "district_heating": heat[heat["NETTYPE"] != "PLAN"] if "NETTYPE" in heat else heat,
+        "electricity_station": read("liander_stations"),
+        "hydrant": points[points["kind"] == "hydrant"] if "kind" in points else points,
+        "cabinet": points[points["kind"] == "cabinet"] if "kind" in points else points,
     }
     return {k: gpd.GeoDataFrame(v[["geometry"]], crs=28992).reset_index(drop=True)
             for k, v in layers.items()}

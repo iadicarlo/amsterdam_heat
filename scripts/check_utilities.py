@@ -29,7 +29,7 @@ def main() -> None:
               f"{hard.conflict.sum()} within 2.5 m")
         for k, d in ut.CLEARANCE.items():
             col = res[f"d_{k}"]
-            print(f"  {k:17s} clearance {d:.1f} m: {(col < d).sum():3d}   "
+            print(f"  {k:19s} clearance {d:.1f} m: {(col < d).sum():3d}   "
                   f"within 2.5 m: {(col < 2.5).sum():3d}   median distance {col.median():.1f} m")
 
 
