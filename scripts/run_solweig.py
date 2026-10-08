@@ -42,7 +42,7 @@ def main() -> None:
         trees_filename=str(inputs / "Trees.tif"),
         landcover_filename=str(inputs / "Landcover.tif"),
         ERA_5_z0_find=False,
-        tile_size=1000,
+        tile_size=2000,
         overlap=20,
         use_own_met=True,
         own_met_file=str(inputs / f"met_{args.date}.txt"),

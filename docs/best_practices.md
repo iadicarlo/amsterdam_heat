@@ -19,7 +19,7 @@ Working rules for this project. Short on purpose.
 ## Known pitfalls (found on the first tile)
 
 - **Ground below sea level.** SOLWEIG, like UMEP, uses 0 in the vegetation surface to mean "no tree". Ground below 0 m NAP then sees phantom vegetation above it and is shaded. Most of Amsterdam is below NAP. `tile_inputs.py` lifts all elevations by `ELEVATION_OFFSET` (20 m), which leaves the physics unchanged. Never feed raw NAP heights to SOLWEIG.
-- **Aerial photos are leaf-off.** The national Beeldmateriaal flights are in early spring, so deciduous trees are bare and NDVI misses most street trees. Do not use spring NDVI to decide where trees are. Use AHN height (with a size filter), the city tree register, or a summer source.
+- **Most aerial photos are leaf-off.** The national Beeldmateriaal flights and most city flights are in early spring, so deciduous trees are bare and NDVI misses most street trees. Use the city's summer infrared flight (`infrarood2023`), which is leaf-on. See docs/data_sources.md.
 - **AHN4 is leaf-off too.** It was flown in winter, so canopy height is fine but canopy density is underestimated. Keep this in mind when comparing shade with summer observations.
 - **BAG GeoJSON from PDOK has RD coordinates but no CRS member.** GeoJSON readers then assume WGS84. Always `set_crs(28992, allow_override=True)`.
 - **PDOK CIR WMS serves JPEG only.** We georeference it from the request box.

@@ -4,7 +4,7 @@ Street-level heat stress and shade for Amsterdam, rebuilt every year from open a
 
 The national felt-temperature map in the Klimaateffectatlas is a good start, but it is built from AHN3, covers a single idealised summer day and cannot answer "what if we plant a tree here?". This project aims to:
 
-1. map the current tree canopy from the latest 5 to 8 cm aerial photos (RGB and near infrared) and compare it with AHN4 and the city tree register,
+1. map the current tree canopy from AHN4, the city's leaf-on summer infrared photo and the municipal tree register,
 2. compute shade, mean radiant temperature and UTCI at 0.5 to 1 m resolution for real heatwave days with SOLWEIG running on a laptop GPU (Apple Metal),
 3. find plantable space from the imagery,
 4. rank candidate tree locations by how much heat stress they remove for vulnerable people (care homes, schools, playgrounds, bus stops, elderly residents).
@@ -36,13 +36,20 @@ uv run python scripts/plot_tile.py --tile 121500_485000 --device mps --hour 15
 The radiation model is SOLWEIG-GPU, used through a fork that adds Apple Silicon (MPS) support:
 `external/solweig-gpu` (branch `apple-mps`). Clone with `git clone --recursive`.
 
-On an M4 MacBook Pro a 700 × 700 m tile at 1 m (500 m plus a 100 m buffer) takes about
-2.3 minutes for a full day on the GPU: about 36 seconds for the sky view factor, which is
-cached and reused for other days, and about 80 seconds for 24 hourly radiation steps.
-GPU and CPU results agree to within 0.001 K
-([validation](docs/validation_121500_485000_mps_vs_cpu.md)).
+Full day (24 hours) for a 700 × 700 m tile on an M4 MacBook Pro, fresh run:
+
+| Resolution | Mac GPU (MPS) | CPU |
+|---|---|---|
+| 1 m (700 × 700 cells) | 2.0 min | 2.4 min |
+| 0.5 m (1400 × 1400 cells) | 9.5 min | 43.9 min |
+
+The sky view factor is cached and reused for other days. GPU and CPU results agree to within
+0.001 K at 1 m ([validation](docs/validation_121500_485000_mps_vs_cpu.md)). Metal support has
+been offered upstream in [nvnsudharsan/SOLWEIG-GPU#138](https://github.com/nvnsudharsan/SOLWEIG-GPU/issues/138).
 
 ![Shade, mean radiant temperature and UTCI in De Pijp, 25 July 2019, 15:00](figures/121500_485000_mps_h15.png)
+
+See [docs/data_sources.md](docs/data_sources.md) for which photos are leaf-on, and the validation data.
 
 ## Layout
 
@@ -65,11 +72,12 @@ All inputs are open data:
 
 | Dataset | Source | Licence |
 |---|---|---|
-| Aerial photos RGB and CIR, 5 to 8 cm, yearly | Beeldmateriaal Nederland via PDOK | CC BY 4.0 |
+| Aerial photo, colour infrared, summer 2023 (leaf-on) | Gemeente Amsterdam (map.data.amsterdam.nl) | CC BY 4.0 |
+| Aerial photos RGB and CIR, 5 to 8 cm, yearly, spring (leaf-off) | Beeldmateriaal Nederland via PDOK | CC BY 4.0 |
 | AHN4 point cloud and DSM/DTM, 0.5 m | Rijkswaterstaat / Het Waterschapshuis via PDOK | CC0 |
 | 3D BAG buildings | TU Delft 3D geoinformation | CC BY 4.0 |
 | BGT large scale topography | Kadaster via PDOK | CC0 |
-| Tree register (Bomen) | Gemeente Amsterdam, data.amsterdam.nl | CC0 / open |
+| Tree register (Bomen) | Gemeente Amsterdam, data.amsterdam.nl | open |
 | Hourly weather | KNMI station Schiphol (240) | CC BY 4.0 |
 | Land surface temperature (validation) | Landsat 8/9 Collection 2 | public domain |
 

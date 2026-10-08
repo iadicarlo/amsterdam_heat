@@ -15,12 +15,16 @@ AHN_WCS = "https://service.pdok.nl/rws/ahn/wcs/v1_0"
 BAG_WFS = "https://service.pdok.nl/lv/bag/wfs/v2_0"
 CIR_WMS = "https://service.pdok.nl/hwh/luchtfotocir/wms/v1_0"
 KNMI_HOURLY = "https://www.daggegevens.knmi.nl/klimatologie/uurgegevens"
+AMS_WMS = "https://map.data.amsterdam.nl/service/"
+AMS_TREES_WFS = "https://api.data.amsterdam.nl/v1/wfs/bomen/"
 
 LICENCES = {
     "ahn": "AHN4, Rijkswaterstaat / Het Waterschapshuis via PDOK, CC0",
     "bag": "BAG, Kadaster via PDOK, CC0",
     "cir": "Luchtfoto Beeldmateriaal Nederland, Kadaster via PDOK, CC BY 4.0",
     "knmi": "KNMI hourly station data, CC BY 4.0",
+    "ams_lufo": "Luchtfoto's Gemeente Amsterdam (Kernregistratie Luchtfoto's), CC BY 4.0",
+    "ams_trees": "Bomen, Gemeente Amsterdam, data.amsterdam.nl",
 }
 
 
@@ -139,4 +143,68 @@ def knmi_hourly(station: int, start_utc: str, end_utc: str, out: Path) -> Path:
     r.raise_for_status()
     out.write_text(r.text)
     _record(out, KNMI_HOURLY, params, LICENCES["knmi"])
+    return out
+
+
+def amsterdam_aerial(
+    bbox: tuple[float, float, float, float], res: float, layer: str, out: Path
+) -> Path:
+    """Gemeente Amsterdam aerial photo (for example ``infrarood2023``, a leaf-on summer
+    colour infrared flight with bands NIR, red, green) as GeoTIFF at ``res`` metres.
+
+    Requested as PNG, so there are no JPEG artefacts in the NDVI.
+    """
+    import io
+
+    import rasterio
+    from PIL import Image
+    from rasterio.transform import from_origin
+
+    xmin, ymin, xmax, ymax = bbox
+    width, height = round((xmax - xmin) / res), round((ymax - ymin) / res)
+    params = {
+        "SERVICE": "WMS",
+        "VERSION": "1.1.1",
+        "REQUEST": "GetMap",
+        "LAYERS": layer,
+        "STYLES": "",
+        "SRS": "EPSG:28992",
+        "BBOX": f"{xmin},{ymin},{xmax},{ymax}",
+        "WIDTH": width,
+        "HEIGHT": height,
+        "FORMAT": "image/png",
+    }
+    r = _get(AMS_WMS, params)
+    if not r.headers.get("Content-Type", "").startswith("image/png"):
+        raise RuntimeError(f"Amsterdam WMS returned {r.headers.get('Content-Type')}: {r.text[:300]}")
+    img = np.asarray(Image.open(io.BytesIO(r.content)).convert("RGB")).transpose(2, 0, 1)
+    with rasterio.open(
+        out, "w", driver="GTiff", width=width, height=height, count=3, dtype="uint8",
+        crs="EPSG:28992", transform=from_origin(xmin, ymax, res, res), compress="deflate",
+    ) as dst:
+        dst.write(img)
+    _record(out, AMS_WMS, params, LICENCES["ams_lufo"])
+    return out
+
+
+def amsterdam_trees(bbox: tuple[float, float, float, float], out: Path) -> Path:
+    """Municipal tree register (stamgegevens) inside the box, GeoJSON points in EPSG:28992.
+
+    Only trees managed by the Gemeente; private garden trees are not in it.
+    """
+    xmin, ymin, xmax, ymax = bbox
+    crs = "urn:ogc:def:crs:EPSG::28992"
+    params = {
+        "SERVICE": "WFS",
+        "VERSION": "2.0.0",
+        "REQUEST": "GetFeature",
+        "TYPENAMES": "stamgegevens",
+        "BBOX": f"{xmin},{ymin},{xmax},{ymax},{crs}",
+        "SRSNAME": crs,
+        "OUTPUTFORMAT": "geojson",
+        "COUNT": 50000,
+    }
+    r = _get(AMS_TREES_WFS, params)
+    out.write_text(r.text)
+    _record(out, AMS_TREES_WFS, params, LICENCES["ams_trees"])
     return out
