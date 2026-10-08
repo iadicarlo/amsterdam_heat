@@ -1,0 +1,249 @@
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+__LEAFLET_CSS__
+</style>
+<style>
+/* Layout: one reading column on top, then map and neighbourhood table side by side, stacking on phones. */
+:root {
+  --bg: #f3f4f2;
+  --surface: #ffffff;
+  --fg: #1d2321;
+  --muted: #5d6763;
+  --line: #d5dad7;
+  --accent: #0d6b62;
+  --hot: #b63a2b;
+  --map-ground: #e6e9e7;
+  --font-ui: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.6rem;
+  --step-3: 2.1rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141816; --surface: #1c211f; --fg: #e4e8e6; --muted: #9aa5a0; --line: #333b38;
+    --accent: #5cc2b5; --hot: #f08a6f; --map-ground: #262c29; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141816; --surface: #1c211f; --fg: #e4e8e6; --muted: #9aa5a0; --line: #333b38;
+  --accent: #5cc2b5; --hot: #f08a6f; --map-ground: #262c29; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: var(--step-0);
+  line-height: 1.5; padding-inline: clamp(16px, 4vw, 48px); padding-block: 28px 48px;
+}
+.wrap { max-width: 1280px; margin-inline: auto; display: grid; gap: 28px; }
+header { display: grid; gap: 10px; max-width: 70ch; }
+.eyebrow { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: var(--step-3); line-height: 1.15; margin: 0; text-wrap: balance; font-weight: 700; }
+h2 { font-size: var(--step-1); margin: 0; text-wrap: balance; }
+.lede { font-size: var(--step-1); margin: 0; }
+.lede strong { color: var(--hot); font-weight: 700; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+
+.main { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+.mapbox { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg button { font: inherit; font-size: 0.85rem; padding: 6px 12px; border: 0; background: transparent; color: var(--fg); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.seg button:focus-visible, th button:focus-visible, tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.legend { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--muted); }
+.ramp { width: 160px; height: 10px; border-radius: 2px; background: linear-gradient(90deg, __GRADIENT__); }
+.ramp.shade { background: linear-gradient(90deg, #bdbdbd, #4a4a4a); }
+#map { height: min(72vh, 680px); min-height: 380px; background: var(--map-ground); }
+.leaflet-container { font-family: var(--font-ui); background: var(--map-ground); }
+.leaflet-tooltip { font-family: var(--font-ui); font-size: 0.8rem; }
+
+.tablebox { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; display: grid; }
+.tablebox .head { padding: 12px 14px; border-bottom: 1px solid var(--line); display: grid; gap: 4px; }
+.tablebox .head p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+.scroll { max-height: min(72vh, 640px); overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; border-bottom: 1px solid var(--line); text-align: right; padding: 0; }
+thead th:first-child { text-align: left; }
+th button { font: inherit; font-weight: 500; color: var(--muted); background: none; border: 0; padding: 8px 10px; cursor: pointer; width: 100%; text-align: inherit; }
+th button[aria-sort] { color: var(--fg); }
+td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+td:first-child { text-align: left; white-space: normal; }
+tbody tr { cursor: pointer; }
+tbody tr:hover, tbody tr.sel { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.bar { display: inline-block; height: 6px; border-radius: 1px; background: var(--hot); vertical-align: middle; margin-left: 6px; }
+.code { color: var(--muted); font-family: var(--font-num); font-size: 0.75rem; }
+
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px 32px; }
+.notes section { display: grid; gap: 6px; align-content: start; }
+.notes p { margin: 0; color: var(--muted); max-width: 65ch; }
+footer { font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Amsterdam Nieuw-West &middot; <span class="num" id="date"></span></div>
+    <h1>Where Nieuw-West gets too hot to walk</h1>
+    <p class="lede" id="lede"></p>
+  </header>
+
+  <div class="main">
+    <div class="mapbox">
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Map layer">
+          <button id="btn-pet" aria-pressed="true">Felt temperature</button>
+          <button id="btn-shade" aria-pressed="false">Shade at 15:00</button>
+        </div>
+        <div class="legend" id="legend-pet"><span class="num" id="lo"></span><span class="ramp"></span><span class="num" id="hi"></span><span>PET, 12:00 to 18:00</span></div>
+        <div class="legend" id="legend-shade" hidden><span>sun</span><span class="ramp shade"></span><span>shade</span></div>
+      </div>
+      <div id="map" aria-label="Map of felt temperature in Nieuw-West"></div>
+    </div>
+
+    <div class="tablebox">
+      <div class="head">
+        <h2>Neighbourhoods</h2>
+        <p>Outdoor land only, buildings and water left out. Neighbourhoods with fewer than 100 residents are not listed. Click a row to find it on the map.</p>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr>
+            <th scope="col"><button data-k="naam">Buurt</button></th>
+            <th scope="col"><button data-k="residents">Residents</button></th>
+            <th scope="col"><button data-k="aged_65_plus">65+</button></th>
+            <th scope="col"><button data-k="pet_mean">PET &deg;C</button></th>
+            <th scope="col"><button data-k="extreme_share">Above 41 &deg;C</button></th>
+            <th scope="col"><button data-k="shade_15h">Shade 15:00</button></th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <section>
+      <h2>What the map shows</h2>
+      <p>PET is the felt temperature: the air temperature of a room in which a person would feel as warm as outside. Above 35 &deg;C is strong heat stress, above 41 &deg;C extreme. The map shows the mean from 12:00 to 18:00 at 1 m resolution, for people walking outside.</p>
+    </section>
+    <section>
+      <h2>The day</h2>
+      <p>1 July 2015, the reference hot day of the national PET map (Klimaateffectatlas), with hourly weather from KNMI Schiphol. The air temperature is Schiphol's, so streets are probably about 1 &deg;C warmer than shown; a correction from city stations comes next.</p>
+    </section>
+    <section>
+      <h2>How it is made</h2>
+      <p>SOLWEIG computes sun, shade and radiation from 3D buildings and trees (AHN4, BAG, the city's 2023 summer infrared photo and tree register). Checked against HvA street measurements, felt temperature is within 1.9 &deg;C in tree shade and 3.7 &deg;C overall.</p>
+    </section>
+    <section>
+      <h2>Not yet included</h2>
+      <p>The shade check on the pedestrian routes against the city's guideline (40% shade), distance to cool spots, and where new trees would help most. Those follow on this map.</p>
+    </section>
+  </div>
+
+  <footer>Isma A. Di Carlo, IMAU, Utrecht University. Model: SOLWEIG-GPU. Data: AHN4, BAG and BGT (PDOK); Gemeente Amsterdam (infrarood2023, bomen, plus- en hoofdnetten, gebieden), CC BY 4.0; CBS Kerncijfers wijken en buurten 2024, CC BY 4.0; KNMI. Source: github.com/iadicarlo/amsterdam_heat</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const D = __DATA__;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (v, d = 1) => v == null || Number.isNaN(v) ? "" : v.toFixed(d);
+const int = v => v == null ? "" : Math.round(v).toLocaleString("en-GB");
+const s = D.summary;
+
+document.getElementById("date").textContent = "1 July 2015, reference hot day";
+document.getElementById("lo").textContent = D.range[0] + "°";
+document.getElementById("hi").textContent = D.range[1] + "°";
+document.getElementById("lede").innerHTML =
+  `On a hot afternoon, outdoor felt temperature in Nieuw-West averages <span class="num">${fmt(s.pet_mean)}</span> °C. ` +
+  `In <strong>${s.hot_buurten} of ${s.buurten} neighbourhoods</strong>, home to ${int(s.hot_residents)} people ` +
+  `(${int(s.hot_aged)} aged 65 or over), more than half of the outdoor space is above 41 °C, the threshold for extreme heat stress.`;
+
+const map = L.map("map", { zoomSnap: 0.25, attributionControl: true, preferCanvas: true });
+map.attributionControl.setPrefix(false).addAttribution("AHN4, BAG, BGT, Gemeente Amsterdam, CBS, KNMI");
+const ov = {};
+for (const k of ["pet", "shade"]) ov[k] = L.imageOverlay(D.overlays[k].src, D.overlays[k].bounds, { opacity: 1 });
+ov.pet.addTo(map);
+map.fitBounds(D.overlays.pet.bounds);
+
+const routeStyle = () => ({ color: css("--accent"), weight: 2.5, opacity: 0.9 });
+const routes = L.geoJSON(D.routes, { style: routeStyle, interactive: false }).addTo(map);
+
+const base = () => ({ color: css("--fg"), weight: 0.8, opacity: 0.55, fill: true, fillOpacity: 0 });
+const byCode = {};
+const outlines = L.geoJSON(D.buurten, {
+  style: base,
+  onEachFeature: (f, layer) => {
+    const p = f.properties;
+    byCode[p.code] = layer;
+    layer.bindTooltip(`<b>${p.naam}</b><br>PET ${fmt(p.pet_mean)} °C, ${fmt(100 * p.extreme_share, 0)}% above 41 °C<br>shade at 15:00 ${fmt(100 * p.shade_15h, 0)}%`, { sticky: true });
+    layer.on("click", () => select(p.code, false));
+  },
+}).addTo(map);
+
+function setLayer(k) {
+  for (const j of ["pet", "shade"]) {
+    const on = j === k;
+    document.getElementById("btn-" + j).setAttribute("aria-pressed", on);
+    document.getElementById("legend-" + j).hidden = !on;
+    if (on) ov[j].addTo(map); else ov[j].remove();
+  }
+  outlines.bringToFront(); routes.bringToFront();
+}
+document.getElementById("btn-pet").onclick = () => setLayer("pet");
+document.getElementById("btn-shade").onclick = () => setLayer("shade");
+
+let selected = null;
+function select(code, zoom = true) {
+  if (selected && byCode[selected]) byCode[selected].setStyle(base());
+  selected = code;
+  const layer = byCode[code];
+  if (layer) {
+    layer.setStyle({ color: css("--hot"), weight: 3, opacity: 1 });
+    if (zoom) map.fitBounds(layer.getBounds(), { maxZoom: 16, padding: [20, 20] });
+  }
+  document.querySelectorAll("#rows tr").forEach(tr => tr.classList.toggle("sel", tr.dataset.code === code));
+  const row = document.querySelector(`#rows tr[data-code="${code}"]`);
+  if (row && !zoom) row.scrollIntoView({ block: "nearest" });
+}
+
+const rows = D.buurten.features.map(f => f.properties).filter(p => p.residents >= 100);
+let sortKey = "pet_mean", desc = true;
+function render() {
+  rows.sort((a, b) => {
+    const x = a[sortKey], y = b[sortKey];
+    const c = typeof x === "string" ? x.localeCompare(y) : (x ?? -1) - (y ?? -1);
+    return desc ? -c : c;
+  });
+  document.getElementById("rows").innerHTML = rows.map(p => `
+    <tr data-code="${p.code}" tabindex="0" class="${p.code === selected ? "sel" : ""}">
+      <td>${p.naam} <span class="code">${p.code}</span></td>
+      <td class="num">${int(p.residents)}</td>
+      <td class="num">${int(p.aged_65_plus)}</td>
+      <td class="num">${fmt(p.pet_mean)}</td>
+      <td class="num">${fmt(100 * p.extreme_share, 0)}%<span class="bar" style="width:${Math.round(40 * p.extreme_share)}px"></span></td>
+      <td class="num">${fmt(100 * p.shade_15h, 0)}%</td>
+    </tr>`).join("");
+  document.querySelectorAll("th button").forEach(b => {
+    if (b.dataset.k === sortKey) b.setAttribute("aria-sort", desc ? "descending" : "ascending");
+    else b.removeAttribute("aria-sort");
+  });
+}
+document.querySelectorAll("th button").forEach(b => b.onclick = () => {
+  if (sortKey === b.dataset.k) desc = !desc; else { sortKey = b.dataset.k; desc = b.dataset.k !== "naam"; }
+  render();
+});
+document.getElementById("rows").addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) select(tr.dataset.code); });
+document.getElementById("rows").addEventListener("keydown", e => {
+  if (e.key === "Enter") { const tr = e.target.closest("tr"); if (tr) select(tr.dataset.code); }
+});
+render();
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { outlines.setStyle(base()); routes.setStyle(routeStyle()); if (selected) select(selected, false); });
+</script>

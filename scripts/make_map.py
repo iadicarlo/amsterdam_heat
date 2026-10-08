@@ -4,7 +4,7 @@
 
 Takes the 500 m core of every finished tile and writes, in
 data/processed/districts/<district>_<date>/:
-  pet_afternoon.tif   mean PET 12:00 to 18:00 (C), 1 m
+  pet_afternoon.tif   mean PET 12:00 to 18:00 (C), 1 m, outdoors on land only
   shade_15h.tif       1 where shaded at 15:00, 1 m
   map/index.html      leafmap web map with both layers, the pedestrian main
                       routes and the neighbourhoods
@@ -24,7 +24,7 @@ from rasterio.warp import transform as warp_points
 
 from amsterdam_heat import sources
 from amsterdam_heat.guidelines import AFTERNOON, read_vector, shaded_at
-from amsterdam_heat.paths import output_dir
+from amsterdam_heat.paths import inputs_dir, output_dir
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -49,8 +49,10 @@ def stitch(tiles, device, date, res=1.0):
         out = output_dir(f"{x}_{y}", device, date)
         p = rasterio.open(out / "PET_0_0.tif").read()
         s = rasterio.open(out / "Shadow_0_0.tif").read()
+        lc = rasterio.open(inputs_dir(f"{x}_{y}") / "Landcover.tif").read(1)
+        p = np.where((lc == 2) | (lc == 7), np.nan, np.nanmean(p[list(AFTERNOON)], axis=0))
         r, c = round((y1 - y - TILE) / res), round((x - x0) / res)
-        pet[r:r + n, c:c + n] = np.nanmean(p[list(AFTERNOON)], axis=0)[b:b + n, b:b + n]
+        pet[r:r + n, c:c + n] = p[b:b + n, b:b + n]
         shade[r:r + n, c:c + n] = shaded_at(s, 15)[b:b + n, b:b + n]
     return pet, shade, from_origin(x0, y1, res, res), len(done)
 
@@ -62,7 +64,7 @@ def write(path, arr, transform):
         dst.write(arr, 1)
 
 
-def to_png(arr, transform, path, cmap, vmin, vmax, res=2.0):
+def to_png(arr, transform, path, cmap, vmin, vmax, res=3.0):
     """Reproject to Web Mercator, colour it and save a PNG; returns the lat/lon bounds."""
     src_crs = "EPSG:28992"
     h, w = arr.shape
@@ -75,7 +77,10 @@ def to_png(arr, transform, path, cmap, vmin, vmax, res=2.0):
               dst_crs="EPSG:3857", resampling=Resampling.average, src_nodata=np.nan, dst_nodata=np.nan)
     rgba = plt.get_cmap(cmap)(np.clip((out - vmin) / (vmax - vmin), 0, 1))
     rgba[..., 3] = np.where(np.isnan(out), 0, 0.75)
-    plt.imsave(path, rgba)
+    from PIL import Image
+
+    img = Image.fromarray((rgba * 255).astype("uint8"), "RGBA")
+    img.quantize(colors=64, method=Image.Quantize.FASTOCTREE).save(path, optimize=True)
     lons, lats = warp_points(
         "EPSG:3857", "EPSG:4326",
         [dst_t.c, dst_t.c + dw * dst_t.a], [dst_t.f + dh * dst_t.e, dst_t.f])
