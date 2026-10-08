@@ -45,3 +45,18 @@ See [utilities.md](utilities.md). Used to screen tree spots, not to replace a KL
 | Electricity stations and LS cabinets | Liander Open Data Elektra (ArcGIS) | CC BY 4.0 | Points |
 | Street lighting ducts | Gemeente Amsterdam `leidingeninfrastructuur` | CC BY | |
 | Fire hydrants, street cabinets | BGT plus objects `put` and `kast` via PDOK | CC0 | Proxy for water mains and telecom; cabinet type left empty |
+
+## Street furniture and street photos
+
+See [street_check.md](street_check.md). Used to screen tree spots against what stands on the street.
+
+| Data | Source | Licence | Notes |
+|---|---|---|---|
+| Parking bays | Gemeente Amsterdam `parkeervakken` (WFS) | open data | Daily; private lots missing |
+| Underground container pits | Gemeente Amsterdam `huishoudelijkafval/containerlocatie` | public | |
+| Litter bins | Gemeente Amsterdam `objectenopenbareruimte/afvalbakken` | public | |
+| Lampposts, shelters, tram rails | BGT plus objects `paal`, `straatmeubilair`, `spoor` via PDOK | CC0 | Some rails out of date |
+| Bike racks, bus and tram stops | OpenStreetMap via Overpass | ODbL | Incomplete |
+| Markets | Maps Amsterdam `MARKTEN` | Maps Amsterdam terms | |
+| Replanting register | Gemeente Amsterdam `bomen/kapenherplant` | public | Reference only |
+| Street level panoramas | Gemeente Amsterdam `api.data.amsterdam.nl/panorama` | CC BY 4.0 | 2017 to 2025, credit on every sheet |
