@@ -14,6 +14,7 @@ import json
 import sys
 from pathlib import Path
 
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rasterio
@@ -67,6 +68,21 @@ def main() -> None:
     routes["geometry"] = routes.geometry.simplify(3)
     rj = json.loads(routes[["VOET", "geometry"]].to_crs(4326).to_json())
 
+    plans, notes = [], []
+    for d_plan in sorted((ROOT / "data" / "processed" / "trees").glob("*/trees.geojson")):
+        meta = json.loads((d_plan.parent / "summary.json").read_text())
+        t = gpd.read_file(d_plan).set_crs(28992, allow_override=True).to_crs(4326)
+        t["plan"] = meta["buurten"]
+        plans.append(t)
+        if "solweig" in meta:
+            b, a = meta["solweig"]["before"], meta["solweig"]["after"]
+            route = (f", and on its main walking routes from {100 * b['route_shade_15']:.0f}% to "
+                     f"{100 * a['route_shade_15']:.0f}%") if "route_shade_15" in b else ""
+            notes.append(f"<b>{meta['buurten']}</b>: {meta['trees']} trees raise pavement shade at 15:00 "
+                         f"from {100 * b['pavement_shade_15']:.0f}% to {100 * a['pavement_shade_15']:.0f}%{route}. "
+                         f"Under the new crowns afternoon PET drops by {a['pet_drop_where_shaded']:.1f} &deg;C.")
+    tj = json.loads(pd.concat(plans)[["plan", "rank", "on", "geometry"]].to_json()) if plans else None
+
     lived = stats[stats["residents"] >= 100]
     hot = lived[lived["extreme_share"] > 0.5]
     summary = {
@@ -86,10 +102,12 @@ def main() -> None:
         "__LEAFLET_CSS__": requests.get(LEAFLET_CSS, timeout=60).text,
         "__DATA__": json.dumps({
             "date": args.date, "summary": summary, "range": PET_RANGE, "buurten": gj, "routes": rj,
+            "trees": tj,
             "overlays": {"pet": {"src": data_uri(page / "pet.png"), "bounds": b_pet},
                          "shade": {"src": data_uri(page / "shade.png"), "bounds": b_shade}},
         }),
         "__GRADIENT__": gradient,
+        "__TREES_NOTE__": " ".join(notes) or "Being worked out for the first neighbourhoods.",
     }.items():
         html = html.replace(key, value)
     (page / "index.html").write_text(html)

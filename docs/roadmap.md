@@ -19,12 +19,15 @@ A 1 m tile takes 43 s the first time and 10 s for every further day, since walls
 5. Screen for the demo neighbourhood. Done: De Aker-Oost, Middelveldsche Akerpolder and Osdorpplein lead (docs/screen_nieuw-west_2015-07-01.md).
 6. Validation against the WUR street globes. Done: no sunlit gap for a small globe (docs/validation_wur.md). Still to do: a real heatwave day (25 July 2019).
 
-## Phase 2, useful (about 3 weeks)
+## Phase 2, useful
 
-1. Plantable space: pavement and squares wide enough for a tree, from the BGT and the summer photo, away from building fronts and existing crowns. Underground cables are not in open data; flag that as the city's check.
-2. Tree placement: rank candidate spots by how much they raise shade on the PLUS and HOOFD routes and bring homes within 300 m of a cool spot, weighted towards elderly residents, schools and care homes. Greedy search on the marginal gain with local SOLWEIG reruns, as TreePlanter (Wallenberg et al. 2022), then a swap pass for the cool spot rule. A learned surrogate only to pre-filter candidates city-wide, with the chosen spots rerun in SOLWEIG.
-3. Explaining the choice: for each chosen spot, the shade hours it adds on a route and the homes it brings near a cool spot. A side figure with gradient boosting and SHAP on our own model output shows which street features drive heat.
-4. Before and after: shade percentages and cool-spot coverage for the top 50 or 100 trees.
+Done for Osdorpplein and De Aker (docs/trees_osdorpplein.md, docs/trees_de-aker.md), with src/amsterdam_heat/planting.py, scripts/plan_trees.py and scripts/verify_trees.py.
+
+1. Plantable space: public pavement and green from the BGT, at least 4 m from facades and 5 m from existing crowns, 1 m inside the pavement. Cables and pipes are not in open data; that stays the city's check.
+2. Tree placement: greedy search on the shade added to walking areas at 11:00, 15:00 and 17:00 (15:00 and the main routes count double), as TreePlanter, using the same two half-hour sun positions SOLWEIG uses, until the guideline targets are met. The full model then confirms the result to the percent.
+3. Results: 35 trees bring Osdorpplein's main route pavements from 28% to 40% shade at 15:00; 189 trees bring De Aker's pavements from 20% to 30%. Under the new crowns afternoon PET drops by 4.5 to 5.3 C.
+
+Next: tree size and species choice with the city, a second hot day (25 July 2019), and an explanation figure (what makes a spot win).
 
 ## Phase 3, pitch (about 1 week)
 

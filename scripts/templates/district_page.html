@@ -57,6 +57,8 @@ h2 { font-size: var(--step-1); margin: 0; text-wrap: balance; }
 .seg button { font: inherit; font-size: 0.85rem; padding: 6px 12px; border: 0; background: transparent; color: var(--fg); cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
 .seg button:focus-visible, th button:focus-visible, tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.check { display: inline-flex; gap: 6px; align-items: center; font-size: 0.85rem; cursor: pointer; }
+.check input { accent-color: var(--accent); }
 .legend { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--muted); }
 .ramp { width: 160px; height: 10px; border-radius: 2px; background: linear-gradient(90deg, __GRADIENT__); }
 .ramp.shade { background: linear-gradient(90deg, #bdbdbd, #4a4a4a); }
@@ -101,6 +103,7 @@ footer { font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--li
           <button id="btn-pet" aria-pressed="true">Felt temperature</button>
           <button id="btn-shade" aria-pressed="false">Shade at 15:00</button>
         </div>
+        <label class="check"><input type="checkbox" id="chk-trees" checked> New trees</label>
         <div class="legend" id="legend-pet"><span class="num" id="lo"></span><span class="ramp"></span><span class="num" id="hi"></span><span>PET, 12:00 to 18:00</span></div>
         <div class="legend" id="legend-shade" hidden><span>sun</span><span class="ramp shade"></span><span>shade</span></div>
       </div>
@@ -143,8 +146,8 @@ footer { font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--li
       <p>SOLWEIG computes sun, shade and radiation from 3D buildings and trees (AHN4, BAG, the city's 2023 summer infrared photo and tree register). Checked against HvA and WUR street measurements: felt temperature within 1.9 &deg;C in tree shade and 3.7 &deg;C overall against HvA, within 0.1 to 2.6 &deg;C on average against the WUR globes.</p>
     </section>
     <section>
-      <h2>Not yet included</h2>
-      <p>Where new trees would help most. That follows on this map, for the neighbourhood picked from this table.</p>
+      <h2>Where to plant</h2>
+      <p>__TREES_NOTE__ Trees are 12 m tall with an 8 m crown, on public pavement or green at least 4 m from facades, chosen one at a time where they add the most shade, then checked with the full model. Cables and pipes are not in open data, so each spot needs the city's check.</p>
     </section>
   </div>
 
@@ -196,10 +199,20 @@ function setLayer(k) {
     document.getElementById("legend-" + j).hidden = !on;
     if (on) ov[j].addTo(map); else ov[j].remove();
   }
-  outlines.bringToFront(); routes.bringToFront();
+  outlines.bringToFront(); routes.bringToFront(); if (treeLayer && map.hasLayer(treeLayer)) treeLayer.bringToFront();
 }
 document.getElementById("btn-pet").onclick = () => setLayer("pet");
 document.getElementById("btn-shade").onclick = () => setLayer("shade");
+
+let treeLayer = null;
+if (D.trees) {
+  treeLayer = L.geoJSON(D.trees, {
+    pointToLayer: (f, ll) => L.circleMarker(ll, { radius: 4, color: css("--surface"), weight: 1, fillColor: css("--accent"), fillOpacity: 1 }),
+    onEachFeature: (f, layer) => layer.bindTooltip(`New tree ${f.properties.rank}, ${f.properties.plan} (${f.properties.on})`),
+  }).addTo(map);
+}
+document.getElementById("chk-trees").onchange = e => { if (!treeLayer) return; if (e.target.checked) treeLayer.addTo(map); else treeLayer.remove(); };
+if (!D.trees) document.getElementById("chk-trees").closest("label").hidden = true;
 
 let selected = null;
 function select(code, zoom = true) {

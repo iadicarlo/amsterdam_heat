@@ -35,6 +35,7 @@ DOIS = {
     "dambrosio2021globe": "10.3390/atmos12050621",
     "vanos2021tmrt": "10.1007/s00484-021-02131-y",
     "galkantor2020solweig": "10.1016/j.uclim.2019.100571",
+    "nemhauser1978submodular": "10.1007/BF01588971",
 }
 
 # arXiv preprints without a journal DOI, checked against export.arxiv.org
