@@ -2,13 +2,17 @@
 
 Street-level shade and heat stress for Amsterdam at 1 m, from open data, run on a MacBook GPU.
 
-The national felt-temperature map uses AHN3 and one idealised summer day, and cannot answer "what if we plant a tree here?". This project maps today's trees from the city's summer infrared photo and tree register, computes shade, mean radiant temperature, UTCI and PET with SOLWEIG for real hot days, checks the result against Amsterdam's heat guidelines, and will rank places where new trees help most. It is a screening tool, not a replacement for site studies.
+The national felt-temperature map uses AHN3 and one idealised summer day, and cannot answer "what if we plant a tree here?". This project maps today's trees from the city's summer infrared photo and tree register, computes shade, mean radiant temperature, UTCI and PET with SOLWEIG for real hot days, checks the result against Amsterdam's heat guidelines, and ranks places where new trees help most. It is a screening tool, not a replacement for site studies.
 
-![Guideline check for De Pijp on the reference hot day](figures/guidelines_121500_485000_2015-07-01.png)
+![Nieuw-West on the reference hot day](figures/nieuw-west_2015-07-01.png)
 
-## First result
+## Results so far
 
-De Pijp on 1 July 2015, the reference hot day of the national PET map: all pedestrian main routes have at least 40% shade at 15:00, and 75% of homes are within 300 m walking of a cool spot (Sarphatipark). Details in [docs/guidelines_121500_485000_2015-07-01.md](docs/guidelines_121500_485000_2015-07-01.md).
+All of Nieuw-West (177 tiles, 64 neighbourhoods) on 1 July 2015, the reference hot day of the national PET map. Only 10 of 43 main pedestrian streets have the 40% shade the city's guideline asks at 15:00, and 41 of 73 neighbourhoods miss 30% on their pavements ([docs/guidelines_nieuw-west_2015-07-01.md](docs/guidelines_nieuw-west_2015-07-01.md)).
+
+Where to plant: 35 new trees bring the main route pavements around Osdorpplein from 28% to 40% shade, and 189 trees bring De Aker's pavements from 20% to 30%. Under the new crowns the afternoon felt temperature drops by 4.5 to 5.3 C. Spots are chosen one at a time where they add the most shade and then checked with the full model ([Osdorpplein](docs/trees_osdorpplein.md), [De Aker](docs/trees_de-aker.md)).
+
+The model is checked against street measurements of the HvA ([docs/validation_hva.md](docs/validation_hva.md)) and the WUR ([docs/validation_wur.md](docs/validation_wur.md)); afternoon air temperature includes a heat island fitted to 45 street stations ([docs/uhi.md](docs/uhi.md)).
 
 ## Setup
 
