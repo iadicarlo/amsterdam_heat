@@ -184,8 +184,17 @@ def main() -> None:
                "pavement_shade_15_after": steps["pavement_shade_15"].iloc[-1] if len(steps) else before[0],
                "route_shade_15_after": steps["route_shade_15"].iloc[-1] if len(steps) else before[1],
                "tree": tree.__dict__, "rules": rules.__dict__, "window": list(win)}
+    summary["trees_xy"] = [[float(x), float(y)] for x, y in zip(xs, ys, strict=True)]
+    old = json.loads((out / "summary.json").read_text()) if (out / "summary.json").exists() else {}
+    if old.get("trees_xy") == summary["trees_xy"]:
+        # same trees: keep the full model checks verify_trees.py already ran
+        summary.update({k: v for k, v in old.items() if k.startswith("solweig")})
     (out / "summary.json").write_text(json.dumps(summary, indent=1))
-    np.savez_compressed(out / "masks.npz", target=target, route_target=route_target, window=np.array(win))
+    first = new_state()
+    gain0 = np.array([first.gain(c) for c in cands])
+    np.savez_compressed(out / "masks.npz", target=target, route_target=route_target, window=np.array(win),
+                        candidates=cands, gain0=gain0, buildings=lc == 2, canopy=trees > 2.0,
+                        shaded15=new_state().shaded(15), near_route=near_route, walk=walk)
     print(json.dumps({k: v for k, v in summary.items() if k not in ("tree", "rules", "window")}, indent=1))
 
     fig, ax = plt.subplots(1, 2, figsize=(14, 6.5), constrained_layout=True,

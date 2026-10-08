@@ -1,0 +1,122 @@
+<title>Hitte in Nieuw-West</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column of about 68 characters; tables and figures may run wider. Same palette as the map page. */
+:root {
+  --bg: #f3f4f2;
+  --surface: #ffffff;
+  --fg: #1d2321;
+  --muted: #5d6763;
+  --line: #d5dad7;
+  --accent: #0d6b62;
+  --hot: #b63a2b;
+  --font-ui: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141816; --surface: #1c211f; --fg: #e4e8e6; --muted: #9aa5a0; --line: #333b38;
+    --accent: #5cc2b5; --hot: #f08a6f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141816; --surface: #1c211f; --fg: #e4e8e6; --muted: #9aa5a0; --line: #333b38;
+  --accent: #5cc2b5; --hot: #f08a6f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 1.0625rem; line-height: 1.6;
+  padding-inline: clamp(16px, 5vw, 56px); padding-block: 40px 64px; }
+article { max-width: 68ch; margin-inline: auto; display: grid; gap: 22px; }
+.wide { width: min(100vw - 32px, 1100px); justify-self: center; }
+header { display: grid; gap: 10px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.eyebrow { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: clamp(2rem, 5vw, 2.7rem); line-height: 1.1; margin: 0; text-wrap: balance; }
+.sub { font-size: 1.2rem; margin: 0; color: var(--muted); text-wrap: balance; }
+.byline { font-size: 0.9rem; color: var(--muted); margin: 0; }
+h2 { font-size: 1.35rem; margin: 18px 0 0; text-wrap: balance; }
+p { margin: 0; }
+.key { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px 20px; display: grid; gap: 8px; }
+.key ul { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; }
+.n, .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 0.92em; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); }
+td.n { white-space: nowrap; }
+caption { caption-side: top; text-align: left; font-weight: 600; padding-bottom: 6px; }
+figure { margin: 0; display: grid; gap: 8px; }
+figure img { width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--line); background: #fff; }
+figcaption { font-size: 0.88rem; color: var(--muted); }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.links { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 6px; }
+</style>
+
+<article>
+  <header>
+    <div class="eyebrow">Concept &middot; oktober 2026</div>
+    <h1>Hitte en schaduw in Nieuw-West</h1>
+    <p class="sub">Een verkenning op straatniveau, met voorstellen voor nieuwe bomen bij het Osdorpplein en in De Aker</p>
+    <p class="byline">Isma A. Di Carlo, klimaatonderzoeker, IMAU, Universiteit Utrecht. Een zijproject, open en zonder commercieel doel.</p>
+  </header>
+
+  <section class="key" aria-label="Samenvatting">
+    <ul>
+      <li>Op een hete middag is de gevoelstemperatuur (PET) buiten in Nieuw-West gemiddeld <span class="num">__PET_MEAN__</span> &deg;C. In __HOT_BUURTEN__ van de __BUURTEN_N__ bewoonde buurten ligt meer dan de helft van de buitenruimte boven 41 &deg;C, de grens voor extreme hittestress.</li>
+      <li>Van de __ROUTES_N__ hoofdroutes voor voetgangers hebben er __ROUTES_OK__ om 15:00 de 40% schaduw die de richtlijn vraagt. In __BUURT_MISS__ van de __BUURT_N__ buurten heeft minder dan 30% van de stoepen schaduw.</li>
+      <li>Groen is er genoeg in de buurt: __HOMES_COOL__ van de woningen ligt binnen 300 m lopen van een koele plek in openbaar groen. Tellen we alleen parken van minstens een hectare, dan is dat __HOMES_PARK__.</li>
+      <li>Het tekort zit dus in schaduw op de straten waar mensen lopen. __O_TREES__ nieuwe bomen rond het Osdorpplein brengen de schaduw op de hoofdroutes van __O_ROUTE__. In De Aker brengen __A_TREES__ bomen de stoepen van __A_PAVE__. Onder de nieuwe kronen daalt de gevoelstemperatuur 's middags met __PET_DROP__ &deg;C.</li>
+    </ul>
+  </section>
+
+  <h2>Wat we hebben gedaan</h2>
+  <p>We berekenden zon, schaduw en straling in heel Nieuw-West op een raster van 1 m, met het stralingsmodel SOLWEIG. De gebouwen en bomen komen uit AHN4, de BAG en de zomerse infraroodfoto van de gemeente uit 2023, aangevuld met het bomenregister. Het weer is dat van KNMI Schiphol op 1 juli 2015, de referentiedag van de landelijke gevoelstemperatuurkaart in de Klimaateffectatlas. Daarbovenop komt het verschil in luchttemperatuur tussen stad en Schiphol op hete middagen, gemeten op 45 straatstations: ongeveer een halve graad warmer op land, koeler bij water.</p>
+  <p>Daarmee toetsen we de hitterichtlijnen uit het praktijkonderzoek van de HvA (2020): schaduw op belangrijke looproutes en op stoepen om 11:00, 15:00 en 17:00, en een koele plek binnen 300 m lopen van elke woning.</p>
+
+  <h2>Wat we vonden</h2>
+  <p>De hoofdroutes met de minste schaduw om 15:00 zijn __WORST_ROUTES__. De mediaan van de looprafstand tot een koel park van minstens een hectare is __PARK_MEDIAN__ m, voor __HOMES_N__ woongebouwen. Op de <a href="__MAP_URL__">interactieve kaart</a> staan alle buurten en straten.</p>
+
+  <h2>Waar nieuwe bomen helpen</h2>
+  <p>Voor twee buurten met veel hitte, weinig schaduw en veel ouderen zochten we plekken voor nieuwe bomen: op openbare stoep of in openbaar groen, minstens 4 m van gevels en 5 m van bestaande kronen. We kozen ze een voor een, steeds waar een boom de meeste ontbrekende schaduw geeft, tot de richtlijn gehaald is. Elke boom is 12 m hoog met een kroon van 8 m, zoals een middelgrote straatboom na 15 tot 20 jaar. Daarna rekenden we het hele model opnieuw door, met en zonder de bomen.</p>
+
+  <div class="scroll wide">
+    <table>
+      <caption>Osdorpplein e.o., __O_TREES__ bomen</caption>
+      <thead><tr><th>Dag</th><th>Schaduw op stoepen om 15:00</th><th>Op hoofdroutes</th><th>Gevoelstemperatuur op stoepen, middag</th><th>Onder de nieuwe kronen</th></tr></thead>
+      <tbody>__O_ROWS__</tbody>
+    </table>
+  </div>
+  <figure class="wide">
+    <img src="__FIG_O__" alt="Kaart van het Osdorpplein met de voorgestelde bomen en de schaduw om 15:00, en een grafiek van de schaduw per extra boom">
+    <figcaption>Osdorpplein: stoepen om 15:00 met bestaande schaduw (blauw), schaduw van de nieuwe bomen (roze) en zon (oranje). Rechts de schaduw per extra boom, beste plek eerst.</figcaption>
+  </figure>
+
+  <div class="scroll wide">
+    <table>
+      <caption>De Aker-Oost en Middelveldsche Akerpolder, __A_TREES__ bomen</caption>
+      <thead><tr><th>Dag</th><th>Schaduw op stoepen om 15:00</th><th>Op hoofdroutes</th><th>Gevoelstemperatuur op stoepen, middag</th><th>Onder de nieuwe kronen</th></tr></thead>
+      <tbody>__A_ROWS__</tbody>
+    </table>
+  </div>
+  <figure class="wide">
+    <img src="__FIG_A__" alt="Kaart van De Aker met de voorgestelde bomen en de schaduw om 15:00, en een grafiek van de schaduw per extra boom">
+    <figcaption>De Aker: zelfde legenda. De stoepen beginnen hier met weinig schaduw, dus er zijn meer bomen nodig.</figcaption>
+  </figure>
+
+  <h2>Hoe betrouwbaar is dit</h2>
+  <p>We vergeleken het model met metingen op straat. Tegen de HvA-metingen van 2015 en 2016 (__HVA_N__ uren op 21 plekken) zit de gevoelstemperatuur gemiddeld __HVA_RMSE__ &deg;C naast de meting, en __HVA_TREE__ &deg;C in boomschaduw. Tegen de straatstations van de WUR (zomers 2025 en 2026) zien we in de zon geen systematische afwijking. Het model rekent de schaduw en straling uit; het is een verkenning en vervangt geen ontwerp op locatie.</p>
+
+  <h2>Wat nog ontbreekt</h2>
+  <p>Kabels en leidingen bepalen of een boom echt kan staan. Elke voorgestelde plek moet daarom getoetst worden aan de KLIC-gegevens en aan de eigen informatie van de gemeente. Ook de soort en de maat bij aanplant zijn een keuze voor de gemeente; wij rekenden met een boom van 12 m.</p>
+
+  <h2>Voorstel</h2>
+  <p>Ik doe dit graag samen met de gemeente: de plekken naast de kaart van ondergrondse infrastructuur leggen, de aannames over boomsoort en maat afstemmen, en de aanpak gebruiken voor de straten op de Koele Groene Stratenkaart. Alles is open en kan elk jaar opnieuw worden doorgerekend met nieuwe luchtfoto's.</p>
+  <div class="links"><a href="__MAP_URL__">Interactieve kaart</a><a href="__REPO_URL__">Code en methode op GitHub</a></div>
+
+  <footer>
+    <p>Bronnen: AHN4, BAG en BGT (PDOK); Gemeente Amsterdam (infrarood 2023, bomen, plus- en hoofdnetten, gebieden), CC BY 4.0; CBS Kerncijfers wijken en buurten 2024; KNMI; HvA, Thermal comfort Amsterdam; AAMS-stations 2015 (PANGAEA); WUR MAQ Amsterdam; ESA WorldCover. Model: SOLWEIG-GPU (Universiteit van Göteborg, UMEP). Methode voor bomen naar Wallenberg et al. (2022).</p>
+  </footer>
+</article>

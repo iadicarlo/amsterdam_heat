@@ -108,7 +108,8 @@ def main() -> None:
     after["tmrt_15_drop_where_shaded"] = float(-np.nanmean(d_tm[changed])) if changed.any() else 0.0
     after["pet_drop_where_shaded"] = float(-np.nanmean(d_pet[changed])) if changed.any() else 0.0
     after["pavement_m2_cooled"] = int(changed.sum())
-    summary["solweig"] = {"before": before, "after": after, "tiles": list(names.values())}
+    key = "solweig" if args.date == "2015-07-01" else f"solweig_{args.date}"
+    summary[key] = {"before": before, "after": after, "tiles": list(names.values())}
     (plan / "summary.json").write_text(json.dumps(summary, indent=1))
 
     pct = lambda v: f"{100 * v:.0f}%"
@@ -127,7 +128,7 @@ def main() -> None:
          f"({summary['route_m2']} m2 along the main walking routes), from {summary['candidates']} possible spots on public "
          "pavement and green at least 4 m from facades and 5 m from existing crowns. Cables and pipes are "
          "not in open data, so every spot needs the city's check. The full model (SOLWEIG and PET, "
-         "1 July 2015) is then run with and without the trees."), "",
+         f"{args.date}) is then run with and without the trees."), "",
         "| On the neighbourhood's pavements | Now | With the trees | Search estimate |", "|---|---|---|---|",
         *[f"| {t} | {f(before[k])} | {f(after[k])} | "
           f"{pct(geo[k.replace('pavement_shade_15', 'pavement_shade_15_after').replace('route_shade_15', 'route_shade_15_after')]) if k in ('pavement_shade_15', 'route_shade_15') else ''} |"
@@ -136,7 +137,8 @@ def main() -> None:
          f"{after['tmrt_15_drop_where_shaded']:.0f} C and afternoon PET by {after['pet_drop_where_shaded']:.1f} C on average."), "",
         f"![Tree plan](../figures/trees_{args.name}.png)",
     ]
-    (ROOT / "docs" / f"trees_{args.name}.md").write_text("\n".join(lines) + "\n")
+    doc = ROOT / "docs" / (f"trees_{args.name}.md" if key == "solweig" else f"trees_{args.name}_{args.date}.md")
+    doc.write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
 
 

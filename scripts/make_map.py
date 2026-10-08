@@ -6,6 +6,7 @@ Takes the 500 m core of every finished tile and writes, in
 data/processed/districts/<district>_<date>/:
   pet_afternoon.tif   mean PET 12:00 to 18:00 (C), 1 m, outdoors on land only
   shade_15h.tif       1 where shaded at 15:00, 1 m
+  *_cog.tif           the same as cloud optimised GeoTIFFs for leafmap
   map/index.html      leafmap web map with both layers, the pedestrian main
                       routes and the neighbourhoods
 and figures/<district>_<date>.png.
@@ -64,6 +65,14 @@ def write(path, arr, transform):
         dst.write(arr, 1)
 
 
+def write_cog(path, arr, transform):
+    """Cloud optimised copy for tile servers (leafmap), which cannot take NaN as no-data."""
+    with rasterio.open(path, "w", driver="COG", height=arr.shape[0], width=arr.shape[1], count=1,
+                       dtype="float32", crs="EPSG:28992", transform=transform, nodata=-9999,
+                       compress="deflate") as dst:
+        dst.write(np.where(np.isnan(arr), -9999, arr).astype("float32"), 1)
+
+
 def to_png(arr, transform, path, cmap, vmin, vmax, res=3.0):
     """Reproject to Web Mercator, colour it and save a PNG; returns the lat/lon bounds."""
     src_crs = "EPSG:28992"
@@ -100,6 +109,8 @@ def main() -> None:
     (out / "map").mkdir(parents=True, exist_ok=True)
     write(out / "pet_afternoon.tif", pet, transform)
     write(out / "shade_15h.tif", shade, transform)
+    write_cog(out / "pet_afternoon_cog.tif", pet, transform)
+    write_cog(out / "shade_15h_cog.tif", shade, transform)
     print(f"{n} of {len(tiles)} tiles stitched")
 
     city = ROOT / "data" / "raw" / "city"

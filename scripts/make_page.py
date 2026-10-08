@@ -82,6 +82,21 @@ def main() -> None:
                          f"from {100 * b['pavement_shade_15']:.0f}% to {100 * a['pavement_shade_15']:.0f}%{route}. "
                          f"Under the new crowns afternoon PET drops by {a['pet_drop_where_shaded']:.1f} &deg;C.")
     tj = json.loads(pd.concat(plans)[["plan", "rank", "on", "geometry"]].to_json()) if plans else None
+    games = []  # smallest plan first
+    for d_plan in sorted((ROOT / "data" / "processed" / "trees").glob("*/summary.json")):
+        meta = json.loads(d_plan.read_text())
+        steps = pd.read_csv(d_plan.parent / "steps.csv")
+        sw = meta.get("solweig", {})
+        has_route = meta["route_m2"] > 0
+        games.append({
+            "label": meta["buurten"], "trees": meta["trees"],
+            "start": [meta["pavement_shade_15_before"], meta["route_shade_15_before"] if has_route else None],
+            "steps": [[round(a, 4), round(b, 4) if has_route else None]
+                      for a, b in zip(steps["pavement_shade_15"], steps["route_shade_15"].fillna(0), strict=True)],
+            "pet_drop": sw.get("after", {}).get("pet_drop_where_shaded"),
+            "tmrt_drop": sw.get("after", {}).get("tmrt_15_drop_where_shaded"),
+        })
+    games.sort(key=lambda g: g["trees"])
 
     lived = stats[stats["residents"] >= 100]
     hot = lived[lived["extreme_share"] > 0.5]
@@ -102,7 +117,7 @@ def main() -> None:
         "__LEAFLET_CSS__": requests.get(LEAFLET_CSS, timeout=60).text,
         "__DATA__": json.dumps({
             "date": args.date, "summary": summary, "range": PET_RANGE, "buurten": gj, "routes": rj,
-            "trees": tj,
+            "trees": tj, "games": games,
             "overlays": {"pet": {"src": data_uri(page / "pet.png"), "bounds": b_pet},
                          "shade": {"src": data_uri(page / "shade.png"), "bounds": b_shade}},
         }),

@@ -36,6 +36,10 @@ dependencies = [
     "planetary-computer>=1.0.0",
     "leafmap>=0.63.1",
     "folium>=0.20.0",
+    "scikit-learn>=1.9.1",
+    "shap>=0.50.0",
+    "localtileserver>=1.0.0",
+    "jupyter>=1.1.1",
 ]
 
 [project.optional-dependencies]
