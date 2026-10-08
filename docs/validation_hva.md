@@ -20,3 +20,7 @@ The model gets the contrast between sun and shade right (Tmrt r = 0.92) and tree
 The largest misses are at Vondelpark (exact spot in the park unknown), Gustav Mahlerplein (glass high rises, changed since 2015) and Amstelplein. On well-defined squares (Dam, Leidseplein, Museumstraat, Stationsplein 2016, Magere Brug) the model is within 3 K.
 
 A likely part of the sun bias is geometry: the globe is a sphere, SOLWEIG computes Tmrt for a standing person, who catches less direct sun when the sun is high. Testing that is next.
+
+The clocks are not the cause either. The HvA radiation sensors follow Schiphol best when their times are read as summer time (r = 0.83, against 0.66 for UTC+1 and 0.45 for UTC), which is how we read them, and SOLWEIG puts the sun in the middle of each hour as intended.
+
+Published comparisons point the same way as the geometry idea: a grey globe read with the Thorsson formula ran 7.7 K above a standing-person reference at open sites in Hong Kong (Ouyang et al. 2022), and small 38 mm globes can be off by more than 10 K in full sun (d'Ambrosio Alfano et al. 2021, Vanos et al. 2021).
