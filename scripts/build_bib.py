@@ -31,6 +31,10 @@ DOIS = {
     "weinstein2020deepforest": "10.1111/2041-210X.13472",
     "wu2023samgeo": "10.21105/joss.05663",
     "ronneberger2015unet": "10.1007/978-3-319-24574-4_28",
+    "ouyang2022globe": "10.1016/j.buildenv.2022.109004",
+    "dambrosio2021globe": "10.3390/atmos12050621",
+    "vanos2021tmrt": "10.1007/s00484-021-02131-y",
+    "galkantor2020solweig": "10.1016/j.uclim.2019.100571",
 }
 
 # arXiv preprints without a journal DOI, checked against export.arxiv.org
