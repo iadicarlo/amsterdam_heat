@@ -30,6 +30,7 @@ dependencies = [
     "timezonefinder>=9.0.0",
     "solweig-gpu",
     "scikit-image>=0.26.0",
+    "openpyxl>=3.1.5",
 ]
 
 [project.optional-dependencies]

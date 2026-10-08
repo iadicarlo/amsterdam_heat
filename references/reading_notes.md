@@ -11,24 +11,24 @@ One line per paper on why it matters here. Keys match `references.bib`. Every en
 | `wallenberg2020anisotropic` | Anisotropic diffuse sky radiation, part of SOLWEIG 2022a which SOLWEIG-GPU implements. |
 | `lindberg2018umep` | UMEP, the QGIS toolbox SOLWEIG lives in. Reference implementation for checking our GPU results. |
 | `kamath2026solweiggpu` | SOLWEIG 2022a in PyTorch (GPL-3.0). Our starting code, patched to run on Apple MPS. |
-| `zonato2026glidesol` | GLIDE-SOL: global input building and diagnostic UHI around SOLWEIG-GPU (version 2 of the package). Shows how far the same engine scales; their global inputs are coarser than AHN4 and BAG, which is our edge for Amsterdam. |
 | `hoppe1999pet` | PET definition (MEMI). Amsterdam's guidelines and the national map are in PET; we use UMEP's PET solver (`src/amsterdam_heat/umep_pet.py`). |
+| `thorsson2007tmrt` | Tmrt from a 38 mm grey globe; we use it to turn the HvA globe measurements into Tmrt. |
 | `brode2011utci` | Operational UTCI polynomial. Converts Tmrt, air temperature, wind and humidity into heat stress classes. |
 
-## Street-level wind (field moving fast, prefer 2021 onwards)
+## Street-level wind
 
 | Key | Role in this project |
 |---|---|
-| `zonato2026glidesol` | **Used.** Directional wind coefficients from building and tree heights (upwind deceleration, wakes, canopy decay). Dortmund, 25 stations, Aug 2024 to Dec 2025: wind RMSE 2.6 to 0.8 m/s, UTCI RMSE 8.1 to 2.8 C. Implemented in SOLWEIG-GPU; we carry the Schiphol wind to city roughness first. |
+| `zonato2026glidesol` | We use it. Directional wind coefficients from building and tree heights (upwind deceleration, wakes, canopy decay). Dortmund, 25 stations, Aug 2024 to Dec 2025: wind RMSE 2.6 to 0.8 m/s, UTCI RMSE 8.1 to 2.8 C. Implemented in SOLWEIG-GPU; we carry the Schiphol wind to city roughness first. |
 | `bernard2023urock` | URock, diagnostic 3D wind model (Rockle method) in UMEP, combined with SOLWEIG in SpatialTC. Heavier, mass consistent; candidate to check GLIDE-SOL against. |
 | `snaiki2025windhierarchical` | U-Net plus cGAN surrogate for pedestrian wind from building geometry. Option if we need CFD-like wind fast. |
-| `huang2026inpaintingunet` | U-Net surrogate trained on LES (van Reeuwijk group, uDALES), seamless across tiles. Same use. |
+| `huang2026inpaintingunet` | U-Net surrogate trained on LES (van Reeuwijk group, uDALES), works across tile borders. Same use. |
 
 ## Dutch context
 
 | Key | Role in this project |
 |---|---|
-| `koopmans2020pet` | The national 1 m PET heat map behind the Klimaateffectatlas. Our baseline: built from AHN3, one idealised hot day, static. We must beat it on currency (yearly imagery), realism (real heatwave days) and the ability to test interventions. Validation report (2020): afternoon mean 12:00 to 18:00 on a 1-in-1000 hot day (1 July 2015); wind reduced with Macdonald, which over-reduced it in central Amsterdam; the Klimaateffectatlas version assumes no wind. |
+| `koopmans2020pet` | The national 1 m PET map (Klimaateffectatlas): AHN3, afternoon mean 12:00 to 18:00 on the 1-in-1000 hot day, 1 July 2015. Our baseline and the source of the reference day. |
 
 ## Machine learning surrogates and tree placement
 
@@ -49,8 +49,6 @@ One line per paper on why it matters here. Keys match `references.bib`. Every en
 | `kirillov2023sam` | Segment Anything. Zero-shot segmentation backbone. |
 | `wu2023samgeo` | samgeo, SAM wrapped for GeoTIFFs with text prompts. Candidate for plantable space (pavement, squares, parking). |
 
-## Still to read or chase
+## To chase
 
-- Code for `schrodi2023treeplacement`: no repository linked on arXiv; ask the authors.
-- Citizen weather station data for validation in Amsterdam (Netatmo based studies).
-- Landsat land surface temperature over Amsterdam during the July 2019 and 2022 heatwaves.
+- Code for `schrodi2023treeplacement` (none linked on arXiv).

@@ -20,6 +20,7 @@ DOIS = {
     "kamath2026solweiggpu": "10.21105/joss.09535",
     "zonato2026glidesol": "10.5194/gmd-19-7389-2026",
     "hoppe1999pet": "10.1007/s004840050118",
+    "thorsson2007tmrt": "10.1002/joc.1537",
     "bernard2023urock": "10.5194/gmd-16-5703-2023",
     "brode2011utci": "10.1007/s00484-011-0454-1",
     "koopmans2020pet": "10.1016/j.buildenv.2020.106984",

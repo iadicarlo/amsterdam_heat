@@ -17,3 +17,4 @@ data/processed/*
 .pytest_cache/
 CLAUDE.md
 .claude/
+notes/

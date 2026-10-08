@@ -1,39 +1,29 @@
-# Data sources: imagery, trees and validation
+# Data sources
 
-What we use, what we checked, and what is still to get. Checked on 2026-10-08.
+Checked October 2026. All grids in RD New (EPSG:28992).
 
-## Aerial imagery
+## Model inputs
 
-| Source | Season | Bands | Resolution | Access | Use here |
-|---|---|---|---|---|---|
-| Gemeente Amsterdam `infrarood2023` (map.data.amsterdam.nl WMS) | **Summer, leaf-on** | NIR, red, green | fetched at 0.25 m | open, CC BY 4.0 | **Tree mask (summer NDVI)** |
-| Gemeente Amsterdam `lufo2024` | Summer, leaf-on | RGB | fetched at 0.25 m | open, CC BY 4.0 | Visual checks, RGB tree models (DeepForest) |
-| Gemeente Amsterdam `lufo2025`, `infrarood2018` to `2022` | Spring, mostly leaf-off | RGB / CIR | | open | Not for vegetation |
-| PDOK Beeldmateriaal (national, 2025 and 2026) | Early spring, leaf-off | RGB, CIR | 5 to 8 cm (JPEG only through WMS) | open, CC BY 4.0 | Not for vegetation |
-| NSO Satellietdataportaal (Pleiades Neo, SuperView Neo) | Several times a year, including summer | RGB + NIR | 30 to 50 cm | free for Dutch users after registration, not open data | Option for newer summer canopy than 2023; needs Isma's own account and its terms |
+| Data | Source | Licence | Notes |
+|---|---|---|---|
+| Heights, 0.5 m | AHN4 via PDOK | CC0 | Flown in winter, leaf-off |
+| Buildings | BAG via PDOK | CC0 | Footprints |
+| Roads, footways, green | BGT via PDOK | CC0 | Current objects only |
+| Summer infrared photo | Gemeente Amsterdam `infrarood2023` | CC BY 4.0 | Leaf-on; used for the tree mask (NDVI) |
+| Trees | Gemeente Amsterdam tree register | open | Municipal trees only, with height class |
+| Pedestrian routes | Gemeente Amsterdam plus- en hoofdnetten | open | `VOET` = PLUS or HOOFD |
+| Neighbourhoods | Gemeente Amsterdam gebieden | open | |
+| Weather | KNMI Schiphol (240), hourly | CC BY 4.0 | |
 
-The city WMS serves lossless PNG and GeoTIFF, which matters for NDVI. PDOK only serves JPEG.
+Most aerial photos (PDOK, and the city's spring flights) are leaf-off and miss street trees. Of the city layers, `infrarood2023` and `lufo2024` are summer flights.
 
-On the first tile (De Pijp), seasons checked by eye on the same crop over Sarphatipark: `infrarood2023` and `lufo2024` are fully leafed, `lufo2025` and the PDOK 2025 CIR are bare.
-
-## Trees
-
-| Source | What it gives | Notes |
-|---|---|---|
-| AHN4 DSM minus DTM | Canopy height at 0.5 m | Flown in winter (leaf-off) around 2020 to 2022, so it misses trees planted since and underestimates canopy density |
-| Gemeente tree register (`bomen/stamgegevens`, WFS) | Location, species, height class, planting year | Municipal trees only, no private gardens. 1,308 trees in the first tile |
-| Summer NDVI from `infrarood2023` | Where there are leaves in summer | Used to confirm AHN canopy and to place register trees AHN missed |
-
-First tile result: AHN alone covers 90% of register trees, summer NDVI 98%, and the combined tree layer 97%.
-
-AHN5 is being flown in parts from 2023; check whether the Amsterdam block is released before scaling up.
+On the De Pijp tile, AHN alone covers 90% of register trees, summer NDVI 98%, and the combined tree layer 97%.
 
 ## Validation
 
-SOLWEIG predicts mean radiant temperature (Tmrt). Air temperature stations only check the weather forcing, not the radiation model, so the useful references are, in order:
-
-1. **UMEP's SOLWEIG code** on the same tile, run straight from the UMEP-processing repository without QGIS (`scripts/compare_umep.py`). Done for shadows and sky view factors on the first tile: they now match. Full Tmrt is not compared because UMEP is at SOLWEIG 2025a/2026a and SOLWEIG-GPU at 2022a.
-2. **WUR / AMS Institute Amsterdam network** (Heusinkveld, Steeneveld): about 30 urban stations and mobile thermal comfort measurements in Amsterdam, including globe or radiation measurements that relate to Tmrt. Needs a data request; also a natural partner when we go to the Gemeente.
-3. **Netatmo citizen stations**: dense, but air temperature only and needs a Netatmo developer account (Isma's own).
-4. **WOW-NL**: KNMI and RMI plan to open the data during 2026; not yet available as a bulk download.
-5. **Landsat land surface temperature** for the broad pattern of hot and cool areas (surface, not air or Tmrt).
+| Data | What | Licence | Status |
+|---|---|---|---|
+| HvA Thermal comfort Amsterdam | Globe temperature and weather at 21 sites, 12 summer afternoons, 2015 and 2016 | CC BY 4.0 | In use |
+| UMEP SOLWEIG code | Shadows and sky view factors on the same inputs | GPL-3.0 | In use |
+| WUR / AMS station network | 24 stations since 2014, some with globe temperature | CC BY-NC 4.0 | To request (maq-observations.nl) |
+| Landsat surface temperature | Broad hot and cool pattern | public domain | Not yet used |
