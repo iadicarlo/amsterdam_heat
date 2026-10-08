@@ -19,6 +19,8 @@ DOIS = {
     "wallenberg2020anisotropic": "10.1016/j.uclim.2020.100589",
     "kamath2026solweiggpu": "10.21105/joss.09535",
     "zonato2026glidesol": "10.5194/gmd-19-7389-2026",
+    "hoppe1999pet": "10.1007/s004840050118",
+    "bernard2023urock": "10.5194/gmd-16-5703-2023",
     "brode2011utci": "10.1007/s00484-011-0454-1",
     "koopmans2020pet": "10.1016/j.buildenv.2020.106984",
     "briegel2023unet": "10.1016/j.uclim.2022.101359",
@@ -38,6 +40,21 @@ ARXIV = {
         "year": "2023",
         "eprint": "2310.05691",
         "note": "NeurIPS 2023 Workshop on Tackling Climate Change with Machine Learning",
+    },
+    "snaiki2025windhierarchical": {
+        "title": "A Hierarchical Deep Learning Model for Predicting Pedestrian-Level Urban Winds",
+        "author": "Snaiki, Reda and Lu, Jiachen and Li, Shaopeng and Nazarian, Negin",
+        "year": "2025",
+        "eprint": "2510.27101",
+        "note": "Preprint",
+    },
+    "huang2026inpaintingunet": {
+        "title": "Inpainting U-Net for seamless pedestrian-level wind prediction across urban morphologies",
+        "author": "Huang, Jingzi and Heaney, Claire E. and Li, Tao and Li, Xinzhe and Hughes, Graham O. "
+        "and van Reeuwijk, Maarten",
+        "year": "2026",
+        "eprint": "2607.02560",
+        "note": "Preprint",
     },
     "kirillov2023sam": {
         "title": "Segment Anything",

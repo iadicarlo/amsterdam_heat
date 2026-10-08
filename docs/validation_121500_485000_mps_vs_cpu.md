@@ -7,7 +7,7 @@ Outdoor cells only, 100 m buffer removed. Daylight hours with sun above the hori
 | 07 | 0.0000 | 0.000 | 0.0000 | 0.000 | 0.000 |
 | 08 | 0.0000 | 0.000 | 0.0000 | 0.000 | 0.000 |
 | 09 | 0.0000 | 0.000 | 0.0000 | 0.000 | 0.000 |
-| 10 | 0.0000 | 0.000 | 0.0000 | 0.000 | 0.000 |
+| 10 | 0.0000 | 0.288 | 0.0000 | 0.075 | 0.000 |
 | 11 | 0.0000 | 0.000 | 0.0000 | 0.000 | 0.000 |
 | 12 | 0.0000 | 0.000 | 0.0000 | 0.000 | 0.000 |
 | 13 | 0.0000 | 0.000 | 0.0000 | 0.000 | 0.000 |
@@ -21,5 +21,5 @@ Outdoor cells only, 100 m buffer removed. Daylight hours with sun above the hori
 | 21 | 0.0000 | 0.000 | 0.0000 | 0.000 | 0.000 |
 | 22 | 0.0000 | 0.000 | 0.0000 | 0.000 | 0.000 |
 
-Wall time for a fresh run (sky view factor plus 24 hours): MPS 2.3 min, CPU 2.6 min.
-Largest Tmrt difference in any outdoor cell and hour: 0.001 K.
+Wall time for a fresh run (sky view factor plus 24 hours): MPS 2.2 min, CPU 2.8 min.
+Largest Tmrt difference in any outdoor cell and hour: 0.288 K.

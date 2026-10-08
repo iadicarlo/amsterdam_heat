@@ -10,6 +10,8 @@ import matplotlib
 import numpy as np
 import rasterio
 
+from amsterdam_heat.paths import output_dir
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -22,11 +24,12 @@ def main() -> None:
     ap.add_argument("--tile", required=True)
     ap.add_argument("--device", default="mps")
     ap.add_argument("--hour", type=int, default=15)
-    ap.add_argument("--label", default="25 July 2019")
+    ap.add_argument("--date", default="2019-07-25")
+    ap.add_argument("--label", default=None, help="date as printed on the figure")
     ap.add_argument("--buffer", type=int, default=100, help="pixels cropped from each side")
     args = ap.parse_args()
 
-    out = ROOT / "data" / "processed" / args.tile / args.device / "output_folder" / "0_0"
+    out = output_dir(args.tile, args.device, args.date)
     lc = rasterio.open(ROOT / "data" / "interim" / args.tile / "Landcover.tif").read(1)
     band = args.hour + 1  # band 1 is hour 0
     shadow = rasterio.open(out / "Shadow_0_0.tif").read(band)
@@ -47,10 +50,10 @@ def main() -> None:
         ax.set_title(title)
         ax.axis("off")
         fig.colorbar(im, ax=ax, shrink=0.75)
-    fig.suptitle(f"Tile {args.tile}, {args.label} {args.hour:02d}:00 local time")
+    fig.suptitle(f"Tile {args.tile}, {args.label or args.date} {args.hour:02d}:00 local time")
     fig.text(0.01, 0.01, CREDIT, fontsize=8, color="0.4")
     fig.tight_layout()
-    path = ROOT / "figures" / f"{args.tile}_{args.device}_h{args.hour:02d}.png"
+    path = ROOT / "figures" / f"{args.tile}_{args.device}_{args.date}_h{args.hour:02d}.png"
     fig.savefig(path, dpi=100)
     print(path.relative_to(ROOT))
 

@@ -32,7 +32,7 @@ AHN5 is being flown in parts from 2023; check whether the Amsterdam block is rel
 
 SOLWEIG predicts mean radiant temperature (Tmrt). Air temperature stations only check the weather forcing, not the radiation model, so the useful references are, in order:
 
-1. **UMEP SOLWEIG in QGIS** on the same tile. Independent implementation of the same model, checks our port and inputs.
+1. **UMEP's SOLWEIG code** on the same tile, run straight from the UMEP-processing repository without QGIS (`scripts/compare_umep.py`). Done for shadows and sky view factors on the first tile: they now match. Full Tmrt is not compared because UMEP is at SOLWEIG 2025a/2026a and SOLWEIG-GPU at 2022a.
 2. **WUR / AMS Institute Amsterdam network** (Heusinkveld, Steeneveld): about 30 urban stations and mobile thermal comfort measurements in Amsterdam, including globe or radiation measurements that relate to Tmrt. Needs a data request; also a natural partner when we go to the Gemeente.
 3. **Netatmo citizen stations**: dense, but air temperature only and needs a Netatmo developer account (Isma's own).
 4. **WOW-NL**: KNMI and RMI plan to open the data during 2026; not yet available as a bulk download.

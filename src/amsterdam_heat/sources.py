@@ -208,3 +208,52 @@ def amsterdam_trees(bbox: tuple[float, float, float, float], out: Path) -> Path:
     out.write_text(r.text)
     _record(out, AMS_TREES_WFS, params, LICENCES["ams_trees"])
     return out
+
+
+BGT_OGC = "https://api.pdok.nl/lv/bgt/ogc/v1/collections"
+RD = "http://www.opengis.net/def/crs/EPSG/0/28992"
+
+
+def bgt_collection(collection: str, bbox: tuple[float, float, float, float], out: Path) -> Path:
+    """Current objects of one BGT collection (for example ``wegdeel``) in the box, as
+    GeoJSON in EPSG:28992. The API also returns retired versions; those are dropped."""
+    xmin, ymin, xmax, ymax = bbox
+    url = f"{BGT_OGC}/{collection}/items"
+    params = {"f": "json", "limit": 1000, "bbox": f"{xmin},{ymin},{xmax},{ymax}",
+              "bbox-crs": RD, "crs": RD}
+    features, next_url = [], None
+    while True:
+        r = _get(next_url, {}) if next_url else _get(url, params)
+        page = r.json()
+        features += [f for f in page["features"] if f["properties"].get("eind_registratie") is None]
+        next_url = next((link["href"] for link in page.get("links", []) if link["rel"] == "next"), None)
+        if not next_url:
+            break
+    out.write_text(json.dumps({"type": "FeatureCollection", "features": features}))
+    _record(out, url, params, "BGT, Kadaster via PDOK, CC0")
+    return out
+
+
+def amsterdam_walking_network(out: Path) -> Path:
+    """Amsterdam main networks (plusnetten en hoofdnetten); column VOET marks the
+    pedestrian PLUS and HOOFD routes. Whole city, WGS84 GeoJSON."""
+    url = "https://maps.amsterdam.nl/open_geodata/geojson_lnglat.php"
+    params = {"KAARTLAAG": "PLUSHOOFDNETTEN", "THEMA": "plushoofdnetten"}
+    out.write_text(_get(url, params).text)
+    _record(out, url, params, "Gemeente Amsterdam open geodata")
+    return out
+
+
+def amsterdam_buurten(bbox: tuple[float, float, float, float], out: Path) -> Path:
+    """Current Amsterdam neighbourhoods (buurten) intersecting the box, EPSG:28992."""
+    xmin, ymin, xmax, ymax = bbox
+    crs = "urn:ogc:def:crs:EPSG::28992"
+    url = "https://api.data.amsterdam.nl/v1/wfs/gebieden/"
+    params = {"SERVICE": "WFS", "VERSION": "2.0.0", "REQUEST": "GetFeature",
+              "TYPENAMES": "buurten", "BBOX": f"{xmin},{ymin},{xmax},{ymax},{crs}",
+              "SRSNAME": crs, "OUTPUTFORMAT": "geojson", "COUNT": 1000}
+    data = _get(url, params).json()
+    data["features"] = [f for f in data["features"] if f["properties"].get("eind_geldigheid") is None]
+    out.write_text(json.dumps(data))
+    _record(out, url, params, "Gebieden, Gemeente Amsterdam, data.amsterdam.nl")
+    return out

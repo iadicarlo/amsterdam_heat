@@ -25,6 +25,12 @@ Working rules for this project. Short on purpose.
 - **PDOK CIR WMS serves JPEG only.** We georeference it from the request box.
 - **Met file hours.** SOLWEIG-GPU wants local clock hours 0 to 23 within one date, labelled by the end of the hour. KNMI hours are UT and also end-of-hour.
 
+- **SOLWEIG-GPU sky view factor (fixed in our fork).** Upstream builds the patch azimuths with a float32 division that drops four of the 153 sky patches and shifts the rest, and its SVF shadows use UMEP's pre-2021 vegetation scheme. Both are fixed on branch `apple-mps` and checked against UMEP's numpy code (`scripts/compare_umep.py`). Rerun that check after any change to the shadow or SVF code.
+
+- **Station wind is far too strong for streets.** Use GLIDE-SOL coefficients (`scripts/run_solweig.py` does this by default). Without them PET and UTCI come out several degrees too low in sheltered streets.
+- **Guideline days.** Amsterdam's cool-spot threshold (PET 35 C) is defined on the 1-in-1000 hot day of the national map, 1 July 2015, averaged 12:00 to 18:00. Use that day for guideline checks and real heatwaves (25 July 2019) only as stress tests.
+- **Check recent literature (2021 onwards) before choosing a method.** Wind and heat-stress modelling move fast; record the choice and the reason in references/reading_notes.md.
+
 ## Modelling
 
 - Before trusting the GPU port, reproduce a UMEP/SOLWEIG reference run on one tile and compare Tmrt cell by cell. Write down the tolerance we accept.

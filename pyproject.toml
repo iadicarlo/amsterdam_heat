@@ -29,6 +29,7 @@ dependencies = [
     "pytz>=2026.5",
     "timezonefinder>=9.0.0",
     "solweig-gpu",
+    "scikit-image>=0.26.0",
 ]
 
 [project.optional-dependencies]
@@ -46,6 +47,8 @@ packages = ["src/amsterdam_heat"]
 
 [tool.ruff]
 line-length = 100
+# vendored from UMEP, kept identical to the source
+extend-exclude = ["src/amsterdam_heat/umep_pet.py"]
 
 [tool.uv.sources]
 solweig-gpu = { path = "external/solweig-gpu", editable = true }

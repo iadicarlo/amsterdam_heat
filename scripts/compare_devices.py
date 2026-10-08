@@ -13,11 +13,13 @@ from pathlib import Path
 import numpy as np
 import rasterio
 
+from amsterdam_heat.paths import output_dir, run_dir
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def load(tile: str, device: str, name: str) -> np.ndarray:
-    path = ROOT / "data" / "processed" / tile / device / "output_folder" / "0_0" / f"{name}_0_0.tif"
+def load(tile: str, device: str, name: str, date: str) -> np.ndarray:
+    path = output_dir(tile, device, date) / f"{name}_0_0.tif"
     with rasterio.open(path) as src:
         return src.read().astype("float64")
 
@@ -26,6 +28,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--tile", required=True)
     ap.add_argument("--buffer", type=int, default=100)
+    ap.add_argument("--date", default="2019-07-25")
     args = ap.parse_args()
 
     lc = rasterio.open(ROOT / "data" / "interim" / args.tile / "Landcover.tif").read(1)
@@ -43,9 +46,9 @@ def main() -> None:
         ),
         "|---|---|---|---|---|---|",
     ]
-    tm = {d: load(args.tile, d, "TMRT") for d in ("mps", "cpu")}
-    ut = {d: load(args.tile, d, "UTCI") for d in ("mps", "cpu")}
-    sh = {d: load(args.tile, d, "Shadow") for d in ("mps", "cpu")}
+    tm = {d: load(args.tile, d, "TMRT", args.date) for d in ("mps", "cpu")}
+    ut = {d: load(args.tile, d, "UTCI", args.date) for d in ("mps", "cpu")}
+    sh = {d: load(args.tile, d, "Shadow", args.date) for d in ("mps", "cpu")}
     worst = 0.0
     for h in range(tm["cpu"].shape[0]):
         dt = np.abs(tm["mps"][h] - tm["cpu"][h])[b, b][outdoor]
@@ -58,7 +61,7 @@ def main() -> None:
             f"| {h:02d} | {np.nanmean(dt):.4f} | {np.nanmax(dt):.3f} | {np.nanmean(du):.4f} "
             f"| {np.nanmax(du):.3f} | {100 * ds.mean():.3f} |"
         )
-    t = {d: json.loads((ROOT / "data" / "processed" / args.tile / d / "timing.json").read_text())
+    t = {d: json.loads((run_dir(args.tile, d, args.date) / "timing.json").read_text())
          for d in ("mps", "cpu")}
     lines += [
         "",
