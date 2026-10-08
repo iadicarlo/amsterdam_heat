@@ -31,12 +31,16 @@ Running: validation against the HvA measurements, full-day timing of the fused M
 
 ## Phase 3, pitch (about 1 week)
 
-1. A short Dutch report and an interactive map of the demo district.
+1. A short Dutch report and an interactive map of the demo district, built with the opengeos tools (leafmap, already used for samgeo) and shared as a web page.
 2. Share it with the city's climate adaptation programme, Ingenieursbureau Amsterdam and WUR.
 
 ## Phase 4, Paris
 
 La Chapelle and Goutte d'Or (18th), four tiles, 24 June 2026 (40.5 C at Montsouris). New loaders for IGN LiDAR HD, the August 2024 infrared photo, the Paris tree register and Meteo-France. Check against the Plan Climat rule of a cool spot within 7 minutes' walk. See docs/paris_feasibility.md.
+
+## Phase 5, future heat
+
+Rerun the reference day and real heatwaves under 2050 and 2100 climates, using existing downscaled projections only: KNMI'23 scenarios for Amsterdam, DRIAS for Paris, and Copernicus Climate Data Store data (CMIP6, CORDEX, CERRA) through cdsapi or earthlens where needed. Needs a CDS account.
 
 ## In the background
 
