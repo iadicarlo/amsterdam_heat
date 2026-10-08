@@ -24,3 +24,5 @@ A likely part of the sun bias is geometry: the globe is a sphere, SOLWEIG comput
 The clocks are not the cause either. The HvA radiation sensors follow Schiphol best when their times are read as summer time (r = 0.83, against 0.66 for UTC+1 and 0.45 for UTC), which is how we read them, and SOLWEIG puts the sun in the middle of each hour as intended.
 
 Published comparisons point the same way as the geometry idea: a grey globe read with the Thorsson formula ran 7.7 K above a standing-person reference at open sites in Hong Kong (Ouyang et al. 2022), and small 38 mm globes can be off by more than 10 K in full sun (d'Ambrosio Alfano et al. 2021, Vanos et al. 2021).
+
+A sphere-shaped body in the model closes only about 1 K of the gap, while the choice of globe formula and a 30% wind error move the observed Tmrt by up to 6 K. See [posture_test.md](posture_test.md).
