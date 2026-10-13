@@ -42,6 +42,9 @@ TILE, BUFFER, MARGIN = 500, 100, 60
 HOUR_WEIGHT = {11: 1.0, 15: 2.0, 17: 1.0}
 PEOPLE_REACH = 100.0  # m
 PEOPLE_USES = ("woon", "winkel", "onderwijs", "gezondheidszorg", "bijeenkomst", "logies", "sport")
+PRIVATE_PLOT_MAX = 10_000.0  # m2
+BLOCKED_AREAS = ("recreatie: speeltuin", "recreatie: volkstuin", "functioneel beheer: hondenuitlaatplaats",
+                 "begraafplaats", "recreatie: sportterrein", "bushalte")
 PATCH = 26  # m, reach of a 12 m tree's shadow at a low afternoon sun, plus its crown
 ROUTE_REACH = 15.0
 GREEN_TYPES = {"groenvoorziening", "grasland overig"}
@@ -67,6 +70,39 @@ def people_near(tiles, win, grid) -> np.ndarray:
     lively = bag[uses.str.contains("|".join(PEOPLE_USES))]
     mask = gl._raster(lively.geometry, grid).astype(bool)
     return distance_transform_edt(~mask) <= PEOPLE_REACH
+
+
+def street_obstacles(name, win, grid, tiles) -> np.ndarray:
+    """Where a trunk may not go above ground: street furniture and parking bays
+    (amsterdam_heat.streetscape, tram tracks widened to 5 m to cover the tram bed),
+    playgrounds, allotments, dog areas, cemeteries, sports grounds and bus stops
+    (BGT functioneel gebied), and cadastral parcels that hold a building, which are
+    private gardens and courtyards rather than public street (parcels under 1 ha)."""
+    from amsterdam_heat import sources, streetscape
+
+    city = ROOT / "data" / "raw" / "city"
+    layers = streetscape.load_layers()
+    mask = streetscape.obstacle_mask(grid.transform, grid.shape, layers,
+                                     clearances={**streetscape.CLEARANCE, "tram_tracks": 5.0})
+    fg = gl.read_vector(city / "bgt_functioneelgebied_nieuw-west.geojson")
+    fg = fg[fg["plus_type"].isin(BLOCKED_AREAS) & fg.intersects(box(*win))]
+    if len(fg):
+        mask |= gl._raster(fg.geometry, grid).astype(bool)
+    parcels_path = city / f"brk_percelen_{name}.geojson"
+    if not parcels_path.exists():
+        sources.brk_parcels(win, parcels_path)
+    parcels = gl.read_vector(parcels_path)
+    bag = pd.concat([gpd.read_file(ROOT / "data" / "raw" / f"{x}_{y}" / "bag_pand.geojson", bbox=box(*win).bounds)
+                     for x, y in tiles if (ROOT / "data" / "raw" / f"{x}_{y}" / "bag_pand.geojson").exists()
+                     and box(x, y, x + TILE, y + TILE).intersects(box(*win))]).set_crs(gl.CRS, allow_override=True)
+    built = gpd.sjoin(parcels, gpd.GeoDataFrame(geometry=bag.representative_point(), crs=gl.CRS),
+                      predicate="contains", how="inner").index.unique()
+    # the city owns most land and leases it, so a large parcel can hold a block of flats
+    # and the public street around it; only plots small enough to be a house or block lot count
+    built = [i for i in built if parcels.loc[i].geometry.area < PRIVATE_PLOT_MAX]
+    if len(built):
+        mask |= gl._raster(parcels.loc[built].geometry, grid).astype(bool)
+    return mask
 
 
 def window(bounds):
@@ -119,6 +155,8 @@ def main() -> None:
     ap.add_argument("--district", default="nieuw-west")
     ap.add_argument("--date", default="2015-07-01")
     ap.add_argument("--max", type=int, default=400)
+    ap.add_argument("--no-street", action="store_true",
+                    help="ignore street furniture, playgrounds and private parcels")
     ap.add_argument("--no-utilities", action="store_true",
                     help="ignore cables and pipes (open data, amsterdam_heat.utilities)")
     args = ap.parse_args()
@@ -165,6 +203,8 @@ def main() -> None:
         from amsterdam_heat import utilities
 
         blocked |= utilities.utility_mask(grid.transform, grid.shape, utilities.load_layers(ROOT / "data" / "raw" / "utilities"))
+    if not args.no_street:
+        blocked |= street_obstacles(args.name, win, grid, tiles)
     cands = pl.candidates(plantable & ~blocked, lc == 2, trees > 2.0, rules)
     patches = {h: tuple(pl.footprint_patch(tree, alt, az, PATCH) for alt, az in pos)
                for h, pos in sun(args.date).items()}
@@ -218,7 +258,7 @@ def main() -> None:
                "pavement_shade_15_after": steps["pavement_shade_15"].iloc[-1] if len(steps) else before[0],
                "route_shade_15_after": steps["route_shade_15"].iloc[-1] if len(steps) else before[1],
                "tree": tree.__dict__, "rules": rules.__dict__, "window": list(win),
-               "utilities": not args.no_utilities}
+               "utilities": not args.no_utilities, "street": not args.no_street}
     summary["trees_xy"] = [[float(x), float(y)] for x, y in zip(xs, ys, strict=True)]
     old = json.loads((out / "summary.json").read_text()) if (out / "summary.json").exists() else {}
     if old.get("trees_xy") == summary["trees_xy"]:

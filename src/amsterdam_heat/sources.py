@@ -364,3 +364,26 @@ def bgt_utility_points(bbox: tuple[float, float, float, float], out: Path) -> Pa
     out.write_text(json.dumps({"type": "FeatureCollection", "features": features}))
     _record(out, f"{BGT_OGC}/put,kast/items", {"bbox": bbox}, "BGT, Kadaster via PDOK, CC0")
     return out
+
+
+BRK_OGC = "https://api.pdok.nl/kadaster/brk-kadastrale-kaart/ogc/v1/collections"
+
+
+def brk_parcels(bbox: tuple[float, float, float, float], out: Path) -> Path:
+    """Cadastral parcels (BRK kadastrale kaart, PDOK, CC0) in the box, EPSG:28992.
+    Owners are not open; only the parcel shapes."""
+    xmin, ymin, xmax, ymax = bbox
+    url = f"{BRK_OGC}/perceel/items"
+    params = {"f": "json", "limit": 1000, "bbox": f"{xmin},{ymin},{xmax},{ymax}",
+              "bbox-crs": RD, "crs": RD}
+    features, next_url = [], None
+    while True:
+        r = _get(next_url, {}) if next_url else _get(url, params)
+        page = r.json()
+        features += page["features"]
+        next_url = next((link["href"] for link in page.get("links", []) if link["rel"] == "next"), None)
+        if not next_url:
+            break
+    out.write_text(json.dumps({"type": "FeatureCollection", "features": features}))
+    _record(out, url, params, "BRK kadastrale kaart, Kadaster via PDOK, CC0")
+    return out
